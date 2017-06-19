@@ -3,6 +3,8 @@
 environment:
   NugetApiKey:
     secure: 7Sx66gU/nWGTnFl5alG+JnBdjZ8KXOKQXfMgAE1asCy6v8fn9kwnR8h7xz8Kg4On
+  GitHubKey:
+    secure: T5RlUwXxR6ISX0I1ejVWROGVCEzwPjeGgX2mQOnO+et5WYRZkUcAvTFGD1Xp/2O/
 
 # Allow WMF5 (i.e. PowerShellGallery functionality)
 os: WMF 5
@@ -10,10 +12,14 @@ os: WMF 5
 # Skip on updates to the readme.
 # We can force this by adding [skip ci] or [ci skip] anywhere in commit message 
 skip_commits:
-  message: /updated (readme|doc).*|update (readme|doc).*s/
+  message: /updated (readme|doc).*|update (readme|doc).*s/|update version.*
 
 build: false
 
-#Kick off the CI/CD pipeline
+# Store GitHub credentials & kick off the CI/CD pipeline
 test_script:
+  - git config --global credential.helper store
+  - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GitHubKey):x-oauth-basic@github.com`n"
+  - git config --global user.email "Rick-2CA@users.noreply.github.com"
+  - git config --global user.name "Rick A."
   - ps: . .\Build\build.ps1

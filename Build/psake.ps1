@@ -98,23 +98,49 @@ Task Build -Depends Test {
 Task Deploy -Depends Build {
     $lines
 
-    # Gate deployment
-    if (
-        $ENV:BHBuildSystem -ne 'Unknown' -and 
-        $ENV:BHBranchName -eq "master" -and 
-        $ENV:BHCommitMessage -match '!deploy'
-    )
-    {
-        $Params = @{
-            Path = $ProjectRoot
-            Force = $true
+    If ($ENV:APPVEYOR_PULL_REQUEST_NUMBER -gt 0) {
+        Write-Warning -Message "Skipping version increment and publish for pull request #$env:APPVEYOR_PULL_REQUEST_NUMBER"
+    }
+    # GitHub & PSGallery Deployment
+    ElseIf ($ENV:BHBuildSystem -ne 'Unknown' -and $ENV:BHBranchName -eq "master") {
+        # Publish To GitHub
+        Try {
+            # Set up a path to the git.exe cmd, import posh-git to give us control over git, and then push changes to GitHub
+            # Note that "update version" is included in the appveyor.yml file's "skip a build" regex to avoid a loop
+            $env:Path += ";$env:ProgramFiles\Git\cmd"
+            Import-Module posh-git -ErrorAction Stop
+            git checkout master
+            git add --all
+            git status
+            git commit -s -m "Update version to $newVersion"
+            git push origin master
+            Write-Host "Module version $newVersion published to GitHub." -ForegroundColor Cyan
+        }
+        Catch {
+            Write-Warning "Publishing update $newVersion to GitHub failed."
+            Throw $_
         }
 
-        Invoke-PSDeploy @Verbose @Params
+        # Publish to PSGallery
+        If ($ENV:BHCommitMessage -match '!deploy') {
+            $Params = @{
+                Path = $ProjectRoot
+                Force = $true
+            }
+
+            # Searches for .PSDeploy.ps1 files in the current and nested paths, and invokes their deployment
+            Invoke-PSDeploy @Verbose @Params
+        }
+        Else {
+            "Skipping PS Gallery deployment: To deploy, ensure that...`n" + 
+            "`t* You are in a known build system (Current: $ENV:BHBuildSystem)`n" + 
+            "`t* You are committing to the master branch (Current: $ENV:BHBranchName) `n" + 
+            "`t* Your commit message includes !deploy (Current: $ENV:BHCommitMessage)"
+        }
     }
-    else
+    Else
     {
-        "Skipping deployment: To deploy, ensure that...`n" + 
+        "Skipping GitHub & PSGallery deployment: To deploy, ensure that...`n" + 
         "`t* You are in a known build system (Current: $ENV:BHBuildSystem)`n" + 
         "`t* You are committing to the master branch (Current: $ENV:BHBranchName) `n" + 
         "`t* Your commit message includes !deploy (Current: $ENV:BHCommitMessage)"

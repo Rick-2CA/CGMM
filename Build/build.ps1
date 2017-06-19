@@ -11,7 +11,7 @@ param ($Task = 'Default')
 # Grab nuget bits, install modules, set build variables, start build.
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
-$Modules = @("Psake", "PSDeploy","BuildHelpers","PSScriptAnalyzer", "Pester")
+$Modules = @("Psake", "PSDeploy","BuildHelpers","PSScriptAnalyzer", "Pester","Posh-Git")
 
 ForEach ($Module in $Modules) {
     If (-not (Get-Module -Name $Module -ListAvailable)) {
