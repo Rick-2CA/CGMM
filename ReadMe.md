@@ -8,8 +8,10 @@ The CGMM module was designed to facilitate migrations of on premise Exchange dis
 * Development completed with Exchange 2010 although it's expected to work through Exchange 2016.
 
 ## Installation
+Details pending...
 
-
+## Usage
+The module requires connectivity to Exchange Server and Exchange Online at the same time.  Due to that the module expects the cmdlets from each resource to be available with specific prefixes.  The remote connections can be setup using `Import-CGMMExchOnline` and `Import-CGMMExchOnPrem` which add prefixes of 'CloudCGMM' and 'PremCGMM' respectively.  When using the module you can choose to write commands using those prefixes or make new connections using the prefixes of your choice.
 
 ## Available Commands  
 
@@ -40,3 +42,12 @@ Functions have been shared in the [Example Scripts](https://github.com/Rick-2CA/
 
 You should add some validation into `Start-CGMMStaging` and proper timing between the steps listed here into the process, but the example shows how the process could be simplified by using CGMM to write your migration scripts.
 
+## Contributing
+The module was written to satisfy the requirements of a specific environment with the motivation of having it work in any environment.  
+
+Features in mind for future releases:
+* Allow the cmdlet prefixes to be configurable variables.
+* Allow migration from on premise distribution groups to cloud unified groups
+* Restoration functions to get you back to the original state
+
+Feature additions are heavily influenced by the needs of my environment and your contributions!
