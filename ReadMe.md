@@ -8,7 +8,7 @@ The CGMM module was designed to facilitate migrations of on premise Exchange dis
 * Exchange Server 2010 or newer
 
 ## Installation
-Details pending...
+Details pending....
 
 ## Usage
 The module requires connectivity to Exchange Server and Exchange Online at the same time.  Due to that the module expects the cmdlets from each resource to be available with specific prefixes.  The remote connections can be setup using `Import-CGMMExchOnline` and `Import-CGMMExchOnPrem` which add prefixes of 'CloudCGMM' and 'PremCGMM' respectively.  When using the module you can choose to write commands using those prefixes or make new connections using the prefixes of your choice.
