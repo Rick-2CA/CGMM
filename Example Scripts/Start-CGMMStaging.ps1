@@ -22,14 +22,14 @@ Function Start-CGMMStaging {
 		[ValidateNotNullOrEmpty()]
 		[string]$ExternalEmailAddress,
 
+		[Parameter(Mandatory = $true)]
+		[ValidateNotNullOrEmpty()]
+		[string]$DomainController,
+
 		# Optional parameters
 		[Parameter()]
 		[ValidateNotNullOrEmpty()]
-		[string]$Alias,
-
-		[Parameter()]
-		[ValidateNotNullOrEmpty()]
-		[string]$DomainController
+		[string]$Alias
     )
 	Try {
 		# Query target group
