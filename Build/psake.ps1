@@ -109,8 +109,8 @@ Task Deploy -Depends Build {
             # Note that "update version" is included in the appveyor.yml file's "skip a build" regex to avoid a loop
             Write-Host "Set-Location $($ENV:BHProjectPath)"
             Set-Location $ENV:BHProjectPath
-            Write-Host 'git checkout master'
-            git checkout master
+            # Write-Host 'git checkout master'
+            # git checkout master
             Write-Host "git add $ENV:BHPSModuleManifest"
             git add $ENV:BHPSModuleManifest
             Write-Host 'git status'
