@@ -83,7 +83,7 @@ Task Build -Depends Test {
     Set-ModuleFunctions -Name $env:BHPSModuleManifest -FunctionsToExport $functions
 
     # Bump the module version
-    $version = [version] (Step-Version (Get-Metadata -Path $env:BHPSModuleManifest))
+    $Script:Version = [version] (Step-Version (Get-Metadata -Path $env:BHPSModuleManifest))
     $galleryVersion = Get-NextPSGalleryVersion -Name $env:BHProjectName
     if ( $version -lt $galleryVersion )
     {
@@ -92,7 +92,7 @@ Task Build -Depends Test {
     $version = [version]::New($version.Major, $version.Minor, $version.Build, $env:BHBuildNumber)
     Write-Host "Using version: $version"
     
-    Update-Metadata -Path $env:BHPSModuleManifest -PropertyName ModuleVersion -Value $version
+    Update-Metadata -Path $env:BHPSModuleManifest -PropertyName ModuleVersion -Value $Version
 }
 
 Task Deploy -Depends Build {
@@ -107,22 +107,22 @@ Task Deploy -Depends Build {
         Try {
             # Set up a path to the git.exe cmd, import posh-git to give us control over git, and then push changes to GitHub
             # Note that "update version" is included in the appveyor.yml file's "skip a build" regex to avoid a loop
-            Write-Host "Set-Location $($ENV:BHProjectPath)"
+            Write-Host "Log:  Set-Location $($ENV:BHProjectPath)"
             Set-Location $ENV:BHProjectPath
-            # Write-Host 'git checkout master'
-            # git checkout master
-            Write-Host "git add $ENV:BHPSModuleManifest"
+            Write-Host 'Log:  git checkout master'
+            git checkout master
+            Write-Host "Log:  git add $ENV:BHPSModuleManifest"
             git add $ENV:BHPSModuleManifest
-            Write-Host 'git status'
+            Write-Host 'Log:  git status'
             git status
-            Write-Host "git commit -s -m "Update version to $newVersion""
-            git commit -s -m "Update version to $newVersion"
-            Write-Host 'git push origin master'
+            Write-Host "Log:  git commit -s -m "Update version to $Version""
+            git commit -s -m "Update version to $Version"
+            Write-Host 'Log:  git push origin master'
             git push origin master
-            Write-Host "Module version $newVersion published to GitHub." -ForegroundColor Cyan
+            Write-Host "Log:  Module version $Version published to GitHub." -ForegroundColor Cyan
         }
         Catch {
-            Write-Warning "Publishing update $newVersion to GitHub failed."
+            Write-Warning "Publishing update $Version to GitHub failed."
             Throw $_
         }
 
