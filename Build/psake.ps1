@@ -107,10 +107,9 @@ Task Deploy -Depends Build {
         Try {
             # Set up a path to the git.exe cmd, import posh-git to give us control over git, and then push changes to GitHub
             # Note that "update version" is included in the appveyor.yml file's "skip a build" regex to avoid a loop
-            $env:Path += ";$env:ProgramFiles\Git\cmd"
-            Import-Module posh-git -ErrorAction Stop
+            Set-Location $ENV:BHProjectPath
             git checkout master
-            git add --all
+            git add $ENV:BHPSModuleManifest
             git status
             git commit -s -m "Update version to $newVersion"
             git push origin master
