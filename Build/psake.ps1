@@ -87,7 +87,7 @@ Task Build -Depends Test {
     $galleryVersion = Get-NextPSGalleryVersion -Name $env:BHProjectName
     if ( $version -lt $galleryVersion )
     {
-        $version = $galleryVersion
+        $Script:version = $galleryVersion
     }
     $version = [version]::New($version.Major, $version.Minor, $version.Build, $env:BHBuildNumber)
     Write-Host "Using version: $version"
@@ -130,7 +130,6 @@ Task Deploy -Depends Build {
             Throw $_
         }
         $ErrorActionPreference = $EAPSaved
-        Throw "Forced Stop"
 
         # Publish to PSGallery
         If ($ENV:BHCommitMessage -match '!deploy') {
