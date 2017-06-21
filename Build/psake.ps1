@@ -126,7 +126,7 @@ Task Deploy -Depends Build {
             git commit -s -m "Update version to $Version"
             Write-Host 'Log:  git push origin master'
             git push origin master
-            Write-Host "Log:  Module version $Version published to GitHub." -ForegroundColor Cyan
+            Write-Host "Module version $Version published to GitHub." -ForegroundColor Cyan
         }
         Catch {
             Write-Warning "Publishing update $Version to GitHub failed."
@@ -142,6 +142,7 @@ Task Deploy -Depends Build {
             }
 
             # Searches for .PSDeploy.ps1 files in the current and nested paths, and invokes their deployment
+            Write-Host "Invoking PSDeploy" -ForegroundColor Cyan
             Invoke-PSDeploy @Verbose @Params
         }
         Else {
