@@ -36,9 +36,12 @@ Documentation for each function is available with `Get-Help`.
 ## Examples
 Functions have been shared in the [Example Scripts](https://github.com/Rick-2CA/Cloud-Group-Migration-Module/tree/master/Example%20Scripts) folder that utilize the CGMM module.  Using the functions allows the following work process:
 
+    Import-CGMMExchOnline -Credential $ExchOnlineCredential
+    Import-CGMMExchOnPrem -Credential $ExchOnPremCredential -ExchangeServer $ExchServerName
     Start-CGMMStaging $Identity -ExternalEmailAddress $ExtAddress
     Disable-DistributionGroup $Identity
     Start-ADSyncSyncCycle
+    # Need a delay here for the sync so $Identity is no longer available in Exchange Online
     Complete-CGMMConversion "CGMM_$Identity" -HiddenFromAddressListsEnabled $False
 
 You should add some validation into `Start-CGMMStaging` and proper timing between the steps listed here into the process, but the example shows how the process could be simplified by using CGMM to write your migration scripts.
