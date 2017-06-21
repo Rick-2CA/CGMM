@@ -12,7 +12,7 @@
 RootModule = 'CGMM.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.2.23'
+ModuleVersion = '0.0.1.23'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -95,7 +95,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('PowerShell','Exchange','Exchange Online','Distribution Groups','Migration','Office 365','O365')
+        Tags = @('PowerShell','Exchange','ExchangeOnline','DistributionGroups','Migration','Office365','O365')
 
         # A URL to the license for this module.
         LicenseUri = 'https://github.com/Rick-2CA/CGMM/blob/master/LICENSE'
