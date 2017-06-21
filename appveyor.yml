@@ -12,8 +12,9 @@ os: WMF 5
 # Skip on updates to the readme.
 # We can force this by adding [skip ci] or [ci skip] anywhere in commit message 
 skip_commits:
-  message: /updated readme.*|update readme.*s|update docs.*|update version.*|update appveyor.*/
-
+  message: /(update|updated) (readme|docs|version|appveyor).*/
+  # /updated readme.*|update readme.*s|update docs.*|update version.*|update appveyor.*/
+  
 # Do not increment build numbers on pull requests
 pull_requests:
   do_not_increment_build_number: true
@@ -27,10 +28,3 @@ test_script:
   - git config --global user.email "Rick-2CA@users.noreply.github.com"
   - git config --global user.name "Rick A."
   - ps: . .\Build\build.ps1
-
-on_success:
-  # - git checkout master
-  # - git add .\CGMM\CGMM.psd1
-  # - git status
-  # - git commit -s -m "Update version"
-  # - git push origin master

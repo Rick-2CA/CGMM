@@ -3,7 +3,7 @@
 Properties {
     # Find the build folder based on build system
     $ProjectRoot = $ENV:BHProjectPath
-    if (-not $ProjectRoot)
+    If (-not $ProjectRoot)
     {
         $ProjectRoot = $PSScriptRoot
     }
@@ -11,10 +11,10 @@ Properties {
     $Timestamp = Get-date -uformat "%Y%m%d-%H%M%S"
     $PSVersion = $PSVersionTable.PSVersion.Major
     $TestFile = "TestResults_PS$PSVersion`_$TimeStamp.xml"
-    $lines = '----------------------------------------------------------------------'
+    $Lines = '----------------------------------------------------------------------'
 
     $Verbose = @{}
-    if ( $ENV:BHCommitMessage -match "!verbose" )
+    If ( $ENV:BHCommitMessage -match "!verbose" )
     {
         $Verbose = @{Verbose = $True}
     }
@@ -23,7 +23,7 @@ Properties {
 Task Default -Depends Deploy
 
 Task Init {
-    $lines
+    $Lines
     Set-Location $ProjectRoot
     "Build System Details:"
     Get-Item ENV:BH* | Format-List
@@ -31,30 +31,28 @@ Task Init {
 }
 
 Task UnitTests -Depends Init {
-    $lines
+    $Lines
     'Running quick unit tests to fail early if there is an error'
     $TestResults = Invoke-Pester -Path $ProjectRoot\Tests\*unit* -PassThru -Tag Build 
     
-    if ( $TestResults.FailedCount -gt 0 )
-    {
+    If ($TestResults.FailedCount -gt 0) {
         Write-Error "Failed '$($TestResults.FailedCount)' tests, build failed"
     }
     "`n"
 }
 
 Task Test -Depends UnitTests {
-    $lines
+    $Lines
     "`n`tSTATUS: Testing with PowerShell $PSVersion"
 
     # Gather test results. Store them in a variable and file
     $TestResults = Invoke-Pester -Path $ProjectRoot\Tests -PassThru -OutputFormat NUnitXml -OutputFile "$ProjectRoot\$TestFile" -Tag Build
 
     # In Appveyor?  Upload our tests! #Abstract this into a function?
-    If ( $ENV:BHBuildSystem -eq 'AppVeyor' )
-    {
-        [xml]$content = Get-Content "$ProjectRoot\$TestFile"
-        $content.'test-results'.'test-suite'.type = "Powershell"
-        $content.Save( "$ProjectRoot\$TestFile" )
+    If ( $ENV:BHBuildSystem -eq 'AppVeyor' ) {
+        [XML]$Content = Get-Content "$ProjectRoot\$TestFile"
+        $Content.'test-results'.'test-suite'.type = "Powershell"
+        $Content.Save( "$ProjectRoot\$TestFile" )
 
         "Uploading $ProjectRoot\$TestFile to AppVeyor"
         "JobID: $env:APPVEYOR_JOB_ID"
@@ -65,17 +63,16 @@ Task Test -Depends UnitTests {
 
     # Failed tests?
     # Need to tell psake or it will proceed to the deployment. Danger!
-    if ( $TestResults.FailedCount -gt 0 )
-    {
+    If ($TestResults.FailedCount -gt 0) {
         Write-Error "Failed '$($TestResults.FailedCount)' tests, build failed"
     }
     "`n"
 }
 
 Task Build -Depends Test {
-    $lines
+    $Lines
 
-    $functions = Get-ChildItem "$env:BHModulePath\Public\*.ps1" | 
+    $Functions = Get-ChildItem "$env:BHModulePath\Public\*.ps1" | 
         Where-Object { $_.name -notmatch 'Tests'} |
         Select-Object -ExpandProperty basename      
 
@@ -83,59 +80,71 @@ Task Build -Depends Test {
     Set-ModuleFunctions -Name $env:BHPSModuleManifest -FunctionsToExport $functions
 
     # Bump the module version
-    $Script:Version = [version] (Step-Version (Get-Metadata -Path $env:BHPSModuleManifest))
-    $galleryVersion = Get-NextPSGalleryVersion -Name $env:BHProjectName
-    if ( $version -lt $galleryVersion )
-    {
-        $Script:version = $galleryVersion
+    ## Get the module version from both the module manifest and the PS Gallery (if it exists)
+    $ManifestVersion = [version](Get-Metadata -Path $env:BHPSModuleManifest)
+    $GalleryVersion = [version](Get-NextPSGalleryVersion -Name $env:BHProjectName)
+    ## If the manifest version is lower than the gallery use the gallery version
+    If ($ManifestVersion -lt $GalleryVersion) {
+        $Script:Version = $GalleryVersion
     }
-    $version = [version]::New($version.Major, $version.Minor, $version.Build, $env:BHBuildNumber)
-    Write-Host "Using version: $version"
-    
-    Update-Metadata -Path $env:BHPSModuleManifest -PropertyName ModuleVersion -Value $Version
+    Else {
+        $Script:Version = $ManifestVersion
+    }
+    ## If deploying use Step-Version to increment the 'build' number
+    If ($ENV:BHCommitMessage -match '!deploy') {
+        $Script:Version = [version](Step-Version ($ManifestVersion))
+    }
+    ## Always increment the 'revision' number with BHBuildNumber
+    If ($Version -ne $ManifestVersion) {
+        $Script:Version = [version]::New($Version.Major, $Version.Minor, $Version.Build, $env:BHBuildNumber)
+        Write-Host "Using version: $Version"
+            
+        Update-Metadata -Path $env:BHPSModuleManifest -PropertyName ModuleVersion -Value $Version
+        $Script:VersionUpdated = $True
+    }
 }
 
 Task Deploy -Depends Build {
-    $lines
+    $Lines
 
     If ($ENV:APPVEYOR_PULL_REQUEST_NUMBER -gt 0) {
         Write-Warning -Message "Skipping version increment and publish for pull request #$env:APPVEYOR_PULL_REQUEST_NUMBER"
     }
     # GitHub & PSGallery Deployment
     ElseIf ($ENV:BHBuildSystem -ne 'Unknown' -and $ENV:BHBranchName -eq "master") {
-        # Publish To GitHub
-        Write-Host "EAP:  $ErrorActionPreference"
-        $EAPSaved = $ErrorActionPreference
-        $ErrorActionPreference = 'SilentlyContinue'
-        Try {
-            # Set up a path to the git.exe cmd, import posh-git to give us control over git, and then push changes to GitHub
-            # Note that "update version" is included in the appveyor.yml file's "skip a build" regex to avoid a loop
-            Write-Host "Log: Location $(Get-Location)"
-            Write-Host "Log:  Set-Location $($ENV:BHProjectPath)"
-            Set-Location $ENV:BHProjectPath
-            Write-Host 'Log:  git checkout master'
-            git checkout master
-            Write-Host "Log:  git add all"
-            git add --all
-            Write-Host 'Log:  git status'
-            git status
-            Write-Host "Log:  git commit -s -m "Update version to $Version""
-            git commit -s -m "Update version to $Version"
-            Write-Host 'Log:  git push origin master'
-            git push origin master
-            Write-Host "Log:  Module version $Version published to GitHub." -ForegroundColor Cyan
+        If ($VersionUpdated -eq $True) {
+            # Publish To GitHub
+            Write-Host "EAP:  $ErrorActionPreference"
+            $EAPSaved = $ErrorActionPreference
+            $ErrorActionPreference = 'SilentlyContinue'
+            Try {
+                # Set up a path to the git.exe cmd, import posh-git to give us control over git, and then push changes to GitHub
+                # Note that "update version" is included in the appveyor.yml file's "skip a build" regex to avoid a loop
+                Write-Host "Log:  Location $(Get-Location)"
+                Write-Host 'Log:  git checkout master'
+                git checkout master
+                Write-Host "Log:  git add all"
+                git add --all
+                Write-Host 'Log:  git status'
+                git status
+                Write-Host "Log:  git commit -s -m "Update version to $Version""
+                git commit -s -m "Update version to $Version"
+                Write-Host 'Log:  git push origin master'
+                git push origin master
+                Write-Host "Log:  Module version $Version published to GitHub." -ForegroundColor Cyan
+            }
+            Catch {
+                Write-Warning "Publishing update $Version to GitHub failed."
+                Throw $_
+            }
+            $ErrorActionPreference = $EAPSaved
         }
-        Catch {
-            Write-Warning "Publishing update $Version to GitHub failed."
-            Throw $_
-        }
-        $ErrorActionPreference = $EAPSaved
 
         # Publish to PSGallery
         If ($ENV:BHCommitMessage -match '!deploy') {
             $Params = @{
                 Path = $ProjectRoot
-                Force = $true
+                Force = $True
             }
 
             # Searches for .PSDeploy.ps1 files in the current and nested paths, and invokes their deployment
