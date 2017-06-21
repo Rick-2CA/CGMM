@@ -82,7 +82,9 @@ Task Build -Depends Test {
     # Bump the module version
     ## Get the module version from both the module manifest and the PS Gallery (if it exists)
     $ManifestVersion = [version](Get-Metadata -Path $env:BHPSModuleManifest)
+    Write-Host "Manifest Version: $ManifestVersion"
     $GalleryVersion = [version](Get-NextPSGalleryVersion -Name $env:BHProjectName)
+    Write-Host "Gallery Version:  $GalleryVersion"
     ## If the manifest version is lower than the gallery use the gallery version
     If ($ManifestVersion -lt $GalleryVersion) {
         $Script:Version = $GalleryVersion
@@ -90,11 +92,13 @@ Task Build -Depends Test {
     Else {
         $Script:Version = $ManifestVersion
     }
+    Write-Host "'Version' after gallery comparison:  $Version"
     ## If deploying use Step-Version to increment the 'build' number
     If ($ENV:BHCommitMessage -match '!deploy') {
         $Script:Version = [version](Step-Version ($ManifestVersion))
     }
     ## Always increment the 'revision' number with BHBuildNumber
+    Write-Host "'Version' after commit check:  $Version"
     If ($Version -ne $ManifestVersion) {
         $Script:Version = [version]::New($Version.Major, $Version.Minor, $Version.Build, $env:BHBuildNumber)
         Write-Host "Using version: $Version"
