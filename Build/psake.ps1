@@ -99,13 +99,10 @@ Task Build -Depends Test {
     }
     ## Always increment the 'revision' number with BHBuildNumber
     Write-Host "'Version' after commit check:  $Version"
-    If ($Version -ne $ManifestVersion) {
-        $Script:Version = [version]::New($Version.Major, $Version.Minor, $Version.Build, $env:BHBuildNumber)
-        Write-Host "Using version: $Version"
-            
-        Update-Metadata -Path $env:BHPSModuleManifest -PropertyName ModuleVersion -Value $Version
-        $Script:VersionUpdated = $True
-    }
+    $Script:Version = [version]::New($Version.Major, $Version.Minor, $Version.Build, $env:BHBuildNumber)
+    Write-Host "Using version: $Version"
+        
+    Update-Metadata -Path $env:BHPSModuleManifest -PropertyName ModuleVersion -Value $Version
 }
 
 Task Deploy -Depends Build {
@@ -116,33 +113,31 @@ Task Deploy -Depends Build {
     }
     # GitHub & PSGallery Deployment
     ElseIf ($ENV:BHBuildSystem -ne 'Unknown' -and $ENV:BHBranchName -eq "master") {
-        If ($VersionUpdated -eq $True) {
-            # Publish To GitHub
-            Write-Host "EAP:  $ErrorActionPreference"
-            $EAPSaved = $ErrorActionPreference
-            $ErrorActionPreference = 'SilentlyContinue'
-            Try {
-                # Set up a path to the git.exe cmd, import posh-git to give us control over git, and then push changes to GitHub
-                # Note that "update version" is included in the appveyor.yml file's "skip a build" regex to avoid a loop
-                Write-Host "Log:  Location $(Get-Location)"
-                Write-Host 'Log:  git checkout master'
-                git checkout master
-                Write-Host "Log:  git add all"
-                git add --all
-                Write-Host 'Log:  git status'
-                git status
-                Write-Host "Log:  git commit -s -m "Update version to $Version""
-                git commit -s -m "Update version to $Version"
-                Write-Host 'Log:  git push origin master'
-                git push origin master
-                Write-Host "Log:  Module version $Version published to GitHub." -ForegroundColor Cyan
-            }
-            Catch {
-                Write-Warning "Publishing update $Version to GitHub failed."
-                Throw $_
-            }
-            $ErrorActionPreference = $EAPSaved
+        # Publish To GitHub
+        Write-Host "EAP:  $ErrorActionPreference"
+        $EAPSaved = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
+        Try {
+            # Set up a path to the git.exe cmd, import posh-git to give us control over git, and then push changes to GitHub
+            # Note that "update version" is included in the appveyor.yml file's "skip a build" regex to avoid a loop
+            Write-Host "Log:  Location $(Get-Location)"
+            Write-Host 'Log:  git checkout master'
+            git checkout master
+            Write-Host "Log:  git add all"
+            git add --all
+            Write-Host 'Log:  git status'
+            git status
+            Write-Host "Log:  git commit -s -m "Update version to $Version""
+            git commit -s -m "Update version to $Version"
+            Write-Host 'Log:  git push origin master'
+            git push origin master
+            Write-Host "Log:  Module version $Version published to GitHub." -ForegroundColor Cyan
         }
+        Catch {
+            Write-Warning "Publishing update $Version to GitHub failed."
+            Throw $_
+        }
+        $ErrorActionPreference = $EAPSaved
 
         # Publish to PSGallery
         If ($ENV:BHCommitMessage -match '!deploy') {
