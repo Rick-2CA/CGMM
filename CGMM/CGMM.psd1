@@ -95,13 +95,13 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @('PowerShell','Exchange','Exchange Online','Distribution Groups','Migration','Office 365','O365')
+        Tags = @('PowerShell','Exchange','Exchange Online','Distribution Groups','Migration','Office 365','O365')
 
         # A URL to the license for this module.
-        # LicenseUri = 'https://github.com/Rick-2CA/CGMM/blob/master/LICENSE'
+        LicenseUri = 'https://github.com/Rick-2CA/CGMM/blob/master/LICENSE'
 
         # A URL to the main website for this project.
-        # ProjectUri = 'https://github.com/Rick-2CA/CGMM'
+        ProjectUri = 'https://github.com/Rick-2CA/CGMM'
 
         # A URL to an icon representing this module.
         # IconUri = ''
