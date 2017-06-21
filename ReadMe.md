@@ -17,18 +17,17 @@ The module requires connectivity to Exchange Server and Exchange Online at the s
 
     CommandType     Name                                               Version    Source
     -----------     ----                                               -------    ------
-    Function        Convert-CGMMStagingGroupCloud                      0.0.3.0    CGMM
-    Function        Convert-CGMMStagingMailContact                     0.0.3.0    CGMM
-    Function        Get-CGMMTargetGroup                                0.0.3.0    CGMM
-    Function        Import-CGMMExchOnline                              0.0.3.0    CGMM
-    Function        Import-CGMMExchOnPrem                              0.0.3.0    CGMM
-    Function        New-CGMMStagingGroup                               0.0.3.0    CGMM
-    Function        New-CGMMStagingMailContact                         0.0.3.0    CGMM
-    Function        Set-CGMMStagingGroup                               0.0.3.0    CGMM
-    Function        Set-CGMMStagingMailContact                         0.0.3.0    CGMM
-    Function        Update-CGMMGroupMembershipCloud                    0.0.3.0    CGMM
-    Function        Update-CGMMGroupMembershipOnPrem                   0.0.3.0    CGMM
-
+    Function        Convert-CGMMStagingGroupCloud                      0.0.1.0    CGMM
+    Function        Convert-CGMMStagingMailContact                     0.0.1.0    CGMM
+    Function        Get-CGMMTargetGroup                                0.0.1.0    CGMM
+    Function        Import-CGMMExchOnline                              0.0.1.0    CGMM
+    Function        Import-CGMMExchOnPrem                              0.0.1.0    CGMM
+    Function        New-CGMMStagingGroup                               0.0.1.0    CGMM
+    Function        New-CGMMStagingMailContact                         0.0.1.0    CGMM
+    Function        Set-CGMMStagingGroup                               0.0.1.0    CGMM
+    Function        Set-CGMMStagingMailContact                         0.0.1.0    CGMM
+    Function        Update-CGMMGroupMembershipCloud                    0.0.1.0    CGMM
+    Function        Update-CGMMGroupMembershipOnPrem                   0.0.1.0    CGMM
 
 Documentation for each function is available with `Get-Help`.
 
@@ -48,6 +47,6 @@ The module was written to satisfy the requirements of a specific environment wit
 Features in mind for future releases:
 * Allow the cmdlet prefixes to be configurable variables.
 * Allow migration from on premise distribution groups to cloud unified groups
-* Restoration functions to get you back to the original state
+* Restoration functions to get you back to the original state by use of the export file from `Get-CGMMTargetGroup`
 
 Feature additions are heavily influenced by the needs of my environment and your contributions!
