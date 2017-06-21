@@ -13,7 +13,6 @@ os: WMF 5
 # We can force this by adding [skip ci] or [ci skip] anywhere in commit message 
 skip_commits:
   message: /(update|updated) (readme|docs|version|appveyor).*/
-  # /updated readme.*|update readme.*s|update docs.*|update version.*|update appveyor.*/
   
 # Do not increment build numbers on pull requests
 pull_requests:
