@@ -37,7 +37,10 @@ Function Start-CGMMStaging {
 		[Parameter()]
 		[ValidateNotNullOrEmpty()]
 		[string]$ContactOU
-    )
+	)
+	
+	$SavedErrorActionPreference = $ErrorActionPreference
+	$ErrorActonPreference = 'Stop'
 	Try {
 		# Validate the Domain Controller
 		Write-Verbose "Validating domain controller $DomainController with Test-Connection"
@@ -124,5 +127,8 @@ Function Start-CGMMStaging {
 	}
 	Catch {
 		$PsCmdlet.ThrowTerminatingError($PSItem)
+	}
+	Finally {
+		$ErrorActionPreference = $SavedErrorActionPreference
 	}
 }
