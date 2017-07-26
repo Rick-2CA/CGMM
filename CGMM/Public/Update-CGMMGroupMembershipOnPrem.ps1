@@ -72,7 +72,12 @@ Function Update-CGMMGroupMembershipOnPrem {
             If ($PSBoundParameters.BypassSecurityGroupManagerCheck) {$AddDistributionGroupMember.Add('BypassSecurityGroupManagerCheck',$True)}
 
             If ($PSCmdlet.ShouldProcess($Object,$MyInvocation.MyCommand)) {
-                Add-PremCGMMDistributionGroupMember @AddDistributionGroupMember
+                Try {
+                    Add-PremCGMMDistributionGroupMember @AddDistributionGroupMember
+                }
+                Catch {
+                    $PsCmdlet.ThrowTerminatingError($PSItem)
+                }
             }
         }
     }

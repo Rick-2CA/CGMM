@@ -316,11 +316,16 @@ Function Set-CGMMStagingGroup {
 
 		# Prefixed call of New-DistributionGroup (Exchange Online version) with -WhatIf support
 		If ($PSCmdlet.ShouldProcess($Identity,$MyInvocation.MyCommand)) {
+			$EAPSaved = $Global:ErrorActionPreference
+			$Global:ErrorActionPreference = 'Stop'
 			Try {
 				Set-CloudCGMMDistributionGroup @PSBoundParameters
 			}
 			Catch {
 				$PsCmdlet.ThrowTerminatingError($PSItem)
+			}
+			Finally {
+				$Global:ErrorActionPreference = $EAPSaved
 			}
 		}
     }

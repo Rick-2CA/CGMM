@@ -173,8 +173,9 @@ Function Get-CGMMTargetGroup {
         Catch {
             $PsCmdlet.ThrowTerminatingError($PSItem)
         }
-
-        $Global:ErrorActionPreference = $EAPSaved
+        Finally {
+            $Global:ErrorActionPreference = $EAPSaved
+        }
     } # End Process
 	end {}
 }

@@ -129,10 +129,11 @@ Function Convert-CGMMStagingMailContact {
             }
         }
         Catch {
-            $Global:ErrorActionPreference = $EAPSaved
             $PsCmdlet.ThrowTerminatingError($PSItem)
         }
-        $Global:ErrorActionPreference = $EAPSaved
+        Finally {
+            $Global:ErrorActionPreference = $EAPSaved
+        }
     }
 	end {}
 }

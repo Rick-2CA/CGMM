@@ -62,7 +62,17 @@ Function Update-CGMMGroupMembershipCloud {
             If ($BypassSecurityGroupManagerCheck) {$AddDistributionGroupMember.Add('BypassSecurityGroupManagerCheck',$True)}
 
             If ($PSCmdlet.ShouldProcess($Object,$MyInvocation.MyCommand)) {
-                Add-CloudCGMMDistributionGroupMember @AddDistributionGroupMember
+                $EAPSaved = $Global:ErrorActionPreference
+                $Global:ErrorActionPreference = 'Stop'
+                Try {
+                    Add-CloudCGMMDistributionGroupMember @AddDistributionGroupMember
+                }
+                Catch {
+                    $PsCmdlet.ThrowTerminatingError($PSItem)
+                }
+                Finally {
+                    $Global:ErrorActionPreference = $EAPSaved
+                }
             }
         }
     }
