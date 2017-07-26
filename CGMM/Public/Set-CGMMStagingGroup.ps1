@@ -216,6 +216,11 @@ Function Set-CGMMStagingGroup {
 		# Update the EmailAddresses to include the prefix
 		If ($PSBoundParameters.EmailAddresses) {
 			Write-Verbose "Processing email addresses and applying the prefix '$StagingGroupPrefix'"
+			# Normalize the case sensitivity of X500.  Office 365 defaults to uppercase and this script
+			# sets the case to uppercase when adding legacy Exchange DNs.  Other versions of Exchange, at
+			# least Exchange 2010, returns the value in lowercase.  Required when doing 
+			# `$NewAddressCollection | Select-Object -Unique` below.
+			[array]$PSBoundParameters.EmailAddresses = $PSBoundParameters.EmailAddresses -replace "^x500:","X500:"
 			# Create an array containing each address with the prefix added
 			[array]$PrefixedEmailAddresses = ForEach ($Address in $PSBoundParameters.EmailAddresses) {
 				# Prefix the addresses with a type (smtp:,X500:) that aren't already prefixed
@@ -259,6 +264,10 @@ Function Set-CGMMStagingGroup {
 
 		# If new addresses exist only add addresses that don't already exist
 		If ($NewAddressCollection.count -gt 0) {
+			# Ensure $NewAddressCollection does not contain duplicates
+			$NewAddressCollection = $NewAddressCollection | Select-Object -Unique
+			# Get the current status minus address type.  This is used to ensure we don't try to add 
+			# an SMTP and smtp version of an address.
 			$CurrentStateTypeLess = $DistGroupCurrentState.EmailAddresses -replace "^.*:"
 			[array]$SecondariesToAdd = ForEach ($NewAddress in $NewAddressCollection) {
 				If ($CurrentStateTypeLess -notcontains $NewAddress.Split(':')[1]){
