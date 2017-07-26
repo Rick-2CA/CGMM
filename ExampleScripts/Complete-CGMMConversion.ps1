@@ -34,20 +34,30 @@ Function Complete-CGMMConversion {
 
 	begin {}
 	process	{
-        $CmdletParameters = @{
-            Identity    = $Identity
-        }
-        If ($null -ne $PSBoundParameters.HiddenFromAddressListsEnabled) {
-            $CmdletParameters.Add('HiddenFromAddressListsEnabled',$PSBoundParameters.HiddenFromAddressListsEnabled)
-        }
-        Write-Verbose "Converting mail contact $($PSBoundParameters.Identity)"
-        Convert-CGMMStagingMailContact @CmdletParameters
+        $SavedErrorActionPreference = $Global:ErrorActionPreference
+        $Global:ErrorActionPreference = 'Stop'
+        Try {
+            $CmdletParameters = @{
+                Identity    = $Identity
+            }
+            If ($null -ne $PSBoundParameters.HiddenFromAddressListsEnabled) {
+                $CmdletParameters.Add('HiddenFromAddressListsEnabled',$PSBoundParameters.HiddenFromAddressListsEnabled)
+            }
+            Write-Verbose "Converting mail contact $($PSBoundParameters.Identity)"
+            Convert-CGMMStagingMailContact @CmdletParameters
 
-        If ($null -ne $PSBoundParameters.IgnoreNamingPolicy) {
-            $CmdletParameters.Add('IgnoreNamingPolicy',$True)
+            If ($null -ne $PSBoundParameters.IgnoreNamingPolicy) {
+                $CmdletParameters.Add('IgnoreNamingPolicy',$True)
+            }
+            Write-Verbose "Converting cloud distribution group $($PSBoundParameters.Identity)"
+            Convert-CGMMStagingGroupCloud @CmdletParameters
         }
-        Write-Verbose "Converting cloud distribution group $($PSBoundParameters.Identity)"
-        Convert-CGMMStagingGroupCloud @CmdletParameters
+        Catch {
+		$PsCmdlet.ThrowTerminatingError($PSItem)
+        }
+        Finally {
+            $Global:ErrorActionPreference = $SavedErrorActionPreference
+        }
     }
 	end {}
 }

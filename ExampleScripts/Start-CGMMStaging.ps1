@@ -39,8 +39,8 @@ Function Start-CGMMStaging {
 		[string]$ContactOU
 	)
 	
-	$SavedErrorActionPreference = $ErrorActionPreference
-	$ErrorActonPreference = 'Stop'
+	$SavedErrorActionPreference = $Global:ErrorActionPreference
+    $Global:ErrorActionPreference = 'Stop'
 	Try {
 		# Validate the Domain Controller
 		Write-Verbose "Validating domain controller $DomainController with Test-Connection"
@@ -91,7 +91,7 @@ Function Start-CGMMStaging {
 			$NewCGMMStagingMailContactSettings.Add('DomainController',$DomainController)
 		}
 		If ($PSBoundParameters.ContactOU) {
-			$NewCGMMStagingMailContactSettings.Add('OrganizationalUnit',$DomainController)
+			$NewCGMMStagingMailContactSettings.Add('OrganizationalUnit',$ContactOU)
 		}
 		$StagingContact = New-CGMMStagingMailContact @NewCGMMStagingMailContactSettings
 
@@ -129,6 +129,6 @@ Function Start-CGMMStaging {
 		$PsCmdlet.ThrowTerminatingError($PSItem)
 	}
 	Finally {
-		$ErrorActionPreference = $SavedErrorActionPreference
+		$Global:ErrorActionPreference = $SavedErrorActionPreference
 	}
 }
