@@ -38,7 +38,10 @@ Function Convert-CGMMStagingMailContact {
         [string]$Identity,
 
         [Parameter()]
-		[Boolean]$HiddenFromAddressListsEnabled
+        [Boolean]$HiddenFromAddressListsEnabled,
+        
+        [Parameter()]
+        [string]$DomainController
     )
 
 	begin {}
@@ -111,7 +114,7 @@ Function Convert-CGMMStagingMailContact {
                 Else {$NewIdentity = $MailContact.Alias}
             }
             
-            # Finish up the hash by adding providing parameters.
+            # Finish up the hash by adding provide parameters.
             $SetMailContactSettings.Add('Identity',$PSBoundParameters.Identity)
             If ($null -ne $PSBoundParameters.HiddenFromAddressListsEnabled) {
                 Write-Verbose "Adding HiddenFromAddressListsEnabled with value $($PSBoundParameters.HiddenFromAddressListsEnabled)"
@@ -119,11 +122,26 @@ Function Convert-CGMMStagingMailContact {
                     'HiddenFromAddressListsEnabled',$PSBoundParameters.HiddenFromAddressListsEnabled
                     )
             }
+            If ($null -ne $PSBoundParameters.DomainController) {
+                Write-Verbose "Adding DomainController with value $($PSBoundParameters.HiddenFromAddressListsEnabled)"
+                $SetMailContactSettings.Add(
+                    'DomainController',$PSBoundParameters.DomainController
+                    )
+            }
 
             If ($PSCmdlet.ShouldProcess($Identity,$MyInvocation.MyCommand)) {
                 Set-PremCGMMMailContact @SetMailContactSettings
                 If ($MailContact.EmailAddressPolicyEnabled -eq $True) {
-                    Write-Verbose "Reenabling the email address policy"
+                    $i = 0
+                    Do {
+                        Write-Verbose "Waiting for the renamed contact to be available to reenable the email address policy"
+                        $i++
+                        If ($i -gt 6) {Throw "Timed out waiting for contact $NewIdentity to be available for configuration. "}
+                        Start-Sleep -Seconds 5  
+                        $NewIdentityReady = Get-PremCGMMMailContact $NewIdentity -ErrorAction SilentlyContinue
+                    }
+                    While ($null -eq $NewIdentityReady)
+                    Write-Verbose "Reenabling the email address policy on contact $NewIdentity"
                     Set-PremCGMMMailContact -Identity $NewIdentity -EmailAddressPolicyEnabled $True
                 }
             }
