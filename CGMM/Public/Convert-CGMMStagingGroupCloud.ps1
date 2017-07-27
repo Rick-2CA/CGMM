@@ -121,5 +121,6 @@ Function Convert-CGMMStagingGroupCloud {
         Finally {
             $Global:ErrorActionPreference = $EAPSaved
         }
+    }
 	end {}
 }
