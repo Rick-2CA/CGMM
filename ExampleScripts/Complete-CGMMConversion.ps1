@@ -5,7 +5,7 @@ Function Complete-CGMMConversion {
     .DESCRIPTION
 
     .EXAMPLE
-    Complete-CGMMConversion -ComputerName server
+    Complete-CGMMConversion -Identity $Identity -HiddenFromAddressListsEnabled $False
 
     .EXAMPLE
 
@@ -29,7 +29,10 @@ Function Complete-CGMMConversion {
 		[Boolean]$HiddenFromAddressListsEnabled,
 
         [Parameter()]
-		[Switch]$IgnoreNamingPolicy
+		[Switch]$IgnoreNamingPolicy,
+        
+        [Parameter()]
+        [string]$DomainController
     )
 
 	begin {}
@@ -42,6 +45,9 @@ Function Complete-CGMMConversion {
             }
             If ($null -ne $PSBoundParameters.HiddenFromAddressListsEnabled) {
                 $CmdletParameters.Add('HiddenFromAddressListsEnabled',$PSBoundParameters.HiddenFromAddressListsEnabled)
+            }
+            If ($null -ne $PSBoundParameters.DomainController) {
+                $CmdletParameters.Add('DomainController',$PSBoundParameters.DomainController)
             }
             Write-Verbose "Converting mail contact $($PSBoundParameters.Identity)"
             Convert-CGMMStagingMailContact @CmdletParameters
