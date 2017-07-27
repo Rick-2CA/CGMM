@@ -46,6 +46,8 @@ Functions have been shared in the [Example Scripts](https://github.com/Rick-2CA/
 
 You should add some validation into `Start-CGMMStaging` and proper timing between the steps listed here into the process, but the example shows how the process could be simplified by using CGMM to write your migration scripts.
 
+AD replication impacts this process as it always has in regards to creating and editing Exchange objects.  Take advantage of the `Domain Controller` parameter available on all functions that work with on premise Exchange.  The `Start` and `Complete` example scripts both have the parameter available.
+
 ## Contributing
 The module was written to satisfy the requirements of a specific environment with the motivation of having it work in any environment.  
 
