@@ -24,7 +24,7 @@ GUID = '3447de8d-717f-4286-bb3a-569e9e4c8cac'
 Author = 'Rick A'
 
 # Company or vendor of this module
-CompanyName = ''
+CompanyName = 'CGMM'
 
 # Copyright statement for this module
 Copyright = '(c) 2017 Rick A. All rights reserved.'
@@ -72,13 +72,13 @@ Description = 'Manage distribution group migrations between Exchange and Exchang
 FunctionsToExport = @('Convert-CGMMStagingGroupCloud','Convert-CGMMStagingMailContact','Get-CGMMTargetGroup','Import-CGMMExchOnline','Import-CGMMExchOnPrem','New-CGMMStagingGroup','New-CGMMStagingMailContact','Set-CGMMStagingGroup','Set-CGMMStagingMailContact','Update-CGMMGroupMembershipCloud','Update-CGMMGroupMembershipOnPrem')
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-CmdletsToExport = '*'
+CmdletsToExport = @()
 
 # Variables to export from this module
-VariablesToExport = '*'
+VariablesToExport = @()
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = '*'
+AliasesToExport = @()
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
