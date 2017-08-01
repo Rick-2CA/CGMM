@@ -4,7 +4,7 @@ $moduleName = Split-Path $moduleRoot -Leaf
 
 $ModuleManifestContent = Get-Content (Join-Path $moduleRoot "$moduleName.psd1")
 
-Describe "Generic Module Tests" {
+Describe "Generic Module Tests" -Tag UnitTest {
     # Import Module
     Try {
         ## Unload the module so it's loaded fresh for testing
@@ -32,7 +32,7 @@ Describe "Generic Module Tests" {
 
         $ExportedAliases = $ModuleInformation.ExportedAliases.Values.Name
         ForEach ($Alias in $DeclaredAliases) {
-            It "Alias $Alias Is Available" {
+            It "Alias Should Be Available $Alias " {
                 $ExportedAliases -contains $Alias | Should Be $True
             }
         }
@@ -50,7 +50,7 @@ Describe "Generic Module Tests" {
 
         $PublishedFunctions = $ModuleInformation.ExportedFunctions.Values.name
         ForEach ($PublicFunction in $DeclaredFunctions) {
-            It "Function $PublicFunction Should Be Available" {
+            It "Function  Available: $PublicFunction " {
                 $PublishedFunctions -contains $PublicFunction | Should Be $True
             }
         }
