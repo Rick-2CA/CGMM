@@ -27,7 +27,7 @@ Describe "Generic Module Tests" -Tag UnitTest {
             ForEach-Object{If ($_ -match '\w+-\w+'){$Matches[0]}}
 
         It "AliasesToExport should not be a wildcard" {
-            $AliasesToExportString -match "\'\*\'" | Should Be $False
+            $AliasesToExportString | Should Not Match "\'\*\'"
         }
 
         $ExportedAliases = $ModuleInformation.ExportedAliases.Values.Name
@@ -45,7 +45,7 @@ Describe "Generic Module Tests" -Tag UnitTest {
             ForEach-Object{If ($_ -match '\w+-\w+'){$Matches[0]}}
 
         It "FunctionsToExport should not be a wildcard" {
-            $FunctionsToExportString -match "\'\*\'" | Should Be $False
+            $FunctionsToExportString | Should Not Match "\'\*\'"
         }
 
         $PublishedFunctions = $ModuleInformation.ExportedFunctions.Values.name
@@ -81,6 +81,11 @@ Describe "Generic Module Tests" -Tag UnitTest {
         }
         It "Should contains a Tags (For the PSGallery)"{
             $ModuleInformation.Tags.count | Should not BeNullOrEmpty
+        }
+        It "PSGallery Tags Should Not Contain Spaces" { 
+            ForEach ($Tag in $ModuleInformation.PrivateData.Values.Tags) {
+                $Tag | Should Not Match '\s'
+            }
         }
     }
 }
