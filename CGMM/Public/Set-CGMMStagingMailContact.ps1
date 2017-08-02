@@ -287,8 +287,12 @@ Function Set-CGMMStagingMailContact {
 			[array]$PSBoundParameters.EmailAddresses = $PSBoundParameters.EmailAddresses -replace "^x500:","X500:"
 			# Create an array containing each address with the prefix added
 			[array]$PrefixedEmailAddresses = ForEach ($Address in $PSBoundParameters.EmailAddresses) {
+				# Prefix X400 addresses that aren't prefixed.  X400s require specific formatting
+				If ($Address -match 'X400' -and $Address -notmatch ";S=$StagingGroupPrefix") {
+					$Address -replace ';S=',";S=$StagingGroupPrefix"
+				}
 				# Prefix the addresses with a type (smtp:,X500:) that aren't already prefixed
-				If ($Address -match ':' -and $Address -notmatch ":$($StagingGroupPrefix)") {
+				ElseIf ($Address -match ':' -and $Address -notmatch ":$($StagingGroupPrefix)") {
 					$Address -replace ":",":$($StagingGroupPrefix)"
 				}
 				# Prefix addresses without a type that aren't already prefixed
