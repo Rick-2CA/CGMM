@@ -88,7 +88,7 @@ Function Start-CGMMStaging {
 		# Create staging contact
 		Write-Verbose "Creating on premise 'staged' mail contact"
 		$NewCGMMStagingMailContactSettings = @{
-			Name					= $Identity
+			Name					= $TargetGroup.Identity
 			ExternalEmailAddress	= $ExternalEmailAddress
 			ErrorAction				= 'Stop'
 		}
