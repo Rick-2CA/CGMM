@@ -77,7 +77,13 @@ Function Start-CGMMStaging {
 		}
 		While ($null -eq $StagingGroupReady)
 		Write-Verbose "Configuring 'staging' cloud group"
-		$TargetGroup | Set-CGMMStagingGroup -Identity $StagingGroup.Identity -MemberDepartRestriction Closed -RequireSenderAuthenticationEnabled $False -ErrorAction Stop
+		$setCGMMStagingGroupSplat = @{
+		    Identity = $StagingGroup.Identity
+		    MemberDepartRestriction = 'Closed'
+		    RequireSenderAuthenticationEnabled = $False
+		    ErrorAction = 'Stop'
+		}
+		$TargetGroup | Set-CGMMStagingGroup @setCGMMStagingGroupSplat
 
 		# Create staging contact
 		Write-Verbose "Creating on premise 'staged' mail contact"
@@ -103,30 +109,64 @@ Function Start-CGMMStaging {
 			$i++
 			If ($i -gt 6) {Throw "Timed out waiting for $($StagingContact.Identity) to be available for configuration."}
 			Start-Sleep -Seconds 5  
-			$StagingGroupReady = Get-PremCGMMMailContact $StagingContact.Identity -DomainController $DomainController -ErrorAction SilentlyContinue
+			$getPremCGMMMailContactSplat = @{
+				Identity = $StagingContact.Identity
+				DomainController = $DomainController
+				ErrorAction = 'SilentlyContinue'
+			}
+			$StagingGroupReady = Get-PremCGMMMailContact @getPremCGMMMailContactSplat
 		}
 		While ($null -eq $StagingGroupReady)
 		Write-Verbose "Configuring 'staging' on premise mail contact"
-		$TargetGroup | Set-CGMMStagingMailContact $StagingContact.Identity -DomainController $DomainController -ErrorAction Stop
+		$setCGMMStagingMailContactSplat = @{
+		    Identity = $StagingContact.Identity
+			DomainController = $DomainController
+			ErrorAction = 'Stop'
+		}
+		$TargetGroup | Set-CGMMStagingMailContact @setCGMMStagingMailContactSplat
 
 		# To alter the contact primary SMTP to match the previous group config:
 		Write-Verbose "Disabling mail contact's email address policy & resetting primary address"
-		Set-CGMMStagingMailContact $StagingContact.Identity -PrimarySmtpAddress $StagingGroup.PrimarySmtpAddress -EmailAddressPolicyEnabled $False -DomainController $DomainController -ErrorAction Stop
+		$setCGMMStagingMailContactSplat = @{
+			Identity = $StagingContact.Identity
+			PrimarySmtpAddress = $StagingGroup.PrimarySmtpAddress
+			EmailAddressPolicyEnabled = $False
+			DomainController = $DomainController
+			ErrorAction = 'Stop'
+		}
+		Set-CGMMStagingMailContact @setCGMMStagingMailContactSplat
 		Write-Verbose "Enabling mail contact's email address policy"
-		Set-CGMMStagingMailContact $StagingContact.Identity -EmailAddressPolicyEnabled $True -DomainController $DomainController -ErrorAction Stop
+		$setCGMMStagingMailContactSplat = @{
+		    Identity = $StagingContact.Identity
+		    DomainController = $DomainController
+			EmailAddressPolicyEnabled = $True
+			ErrorAction = 'Stop'
+		}
+		Set-CGMMStagingMailContact @setCGMMStagingMailContactSplat
 
 		# Assign new objects to their respective group memberships (groups the new objects are nested into)
 		If ($TargetGroup.MemberOfCloud) {
 			Write-Verbose "Updating membership for $($StagingGroup.Identity)"
-			Update-CGMMGroupMembershipCloud -Identity $StagingGroup.Identity -Group $TargetGroup.MemberOfCloud -ErrorAction Stop
+			$updateCGMMGroupMembershipCloudSplat = @{
+				Group = $TargetGroup.MemberOfCloud
+				Identity = $StagingGroup.Identity
+				ErrorAction = 'Stop'    
+			}
+			Update-CGMMGroupMembershipCloud @updateCGMMGroupMembershipCloudSplat
 		}
 		If ($TargetGroup.MemberOfOnPrem) {
 			Write-Verbose "Updating membership for $($StagingContact.Identity)"
-			Update-CGMMGroupMembershipOnPrem -Identity $StagingContact.Identity -Group $TargetGroup.MemberOfOnPrem -DomainController $DomainController -ErrorAction Stop
+			$updateCGMMGroupMembershipOnPremSplat = @{
+				Identity = $StagingContact.Identity
+				Group = $TargetGroup.MemberOfOnPrem
+				DomainController = $DomainController
+			    ErrorAction = 'Stop'
+			}
+			Update-CGMMGroupMembershipOnPrem @updateCGMMGroupMembershipOnPremSplat
 		}
 	}
 	Catch {
-		$PsCmdlet.ThrowTerminatingError($PSItem)
+		Write-Eerror $PSItem -ErrorAction Stop
 	}
 	Finally {
 		$Global:ErrorActionPreference = $SavedErrorActionPreference

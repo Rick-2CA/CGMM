@@ -67,7 +67,7 @@ Function Complete-CGMMConversion {
             Convert-CGMMStagingGroupCloud @convertCGMMStagingGroupCloud
         }
         Catch {
-		$PsCmdlet.ThrowTerminatingError($PSItem)
+		    Write-Error $PSItem -ErrorAction Stop
         }
         Finally {
             $Global:ErrorActionPreference = $SavedErrorActionPreference
