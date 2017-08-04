@@ -166,7 +166,7 @@ Function Start-CGMMStaging {
 		}
 	}
 	Catch {
-		Write-Eerror $PSItem -ErrorAction Stop
+		Write-Error $PSItem -ErrorAction Stop
 	}
 	Finally {
 		$Global:ErrorActionPreference = $SavedErrorActionPreference
