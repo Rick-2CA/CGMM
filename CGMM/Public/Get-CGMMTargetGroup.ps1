@@ -147,14 +147,6 @@ Function Get-CGMMTargetGroup {
                 Select-Object -ExpandProperty LegacyExchangeDN
             $GroupObject | Add-Member -MemberType NoteProperty -Name LegacyExchangeDNCloud -Value $LegacyExchangeDNCloud
 
-            If ($ExportSettings) {
-                Try {
-                    Write-Verbose "Converting object data to Json and exporting to $Identity.xml"
-                    $GroupObject | ConvertTo-Json | Out-File "$Identity.json"
-                }
-                Catch {Write-Warning $PSItem}
-            }
-            
             # Remove parameters with null/empty values
             # Get-DistributionList displays properties that or null or empty.  Set-DistributionList doesn't accept 
             # pipeline input and therefore isn't impacted by the null or empty values.  In the module we're doing a
@@ -166,9 +158,18 @@ Function Get-CGMMTargetGroup {
                     $PropertyName
                 }
             }
+            $GroupObject = $GroupObject | Select-Object -Property * -ExcludeProperty $ExcludeProperties
+
+            If ($PSBoundParameters.ExportSettings) {
+                Try {
+                    Write-Verbose "Converting object data to Json and exporting to $Identity.xml"
+                    $GroupObject | ConvertTo-Json | Out-File "$Identity.json"
+                }
+                Catch {Write-Warning $PSItem}
+            }
 
             # Console Output
-            $GroupObject | Select-Object -Property * -ExcludeProperty $ExcludeProperties
+            $GroupObject
         } # End Try
         Catch {
             $PsCmdlet.ThrowTerminatingError($PSItem)
