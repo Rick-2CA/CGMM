@@ -41,6 +41,9 @@ Function Get-CGMMTargetGroup {
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$Identity,
+        
+        [Parameter()]
+        [string]$DomainController,
 
         [Parameter()]
         [Switch]$ViewEntireForest,
@@ -76,7 +79,14 @@ Function Get-CGMMTargetGroup {
         Try {
             # Collect group details and membership list
             Write-Verbose "Querying distribution group identity $Identity"
-            [object]$GroupObject = Get-PremCGMMDistributionGroup $Identity -ErrorAction Stop
+            $getPremCGMMDistributionGroupSplat = @{
+                Identity    = $Identity
+                ErrorAction = 'Stop'
+            }
+            If ($PSBoundParameters.$DomainController) {
+                $getPremCGMMDistributionGroupSplat.Add('DomainController',$DomainController)
+            }
+            [object]$GroupObject = Get-PremCGMMDistributionGroup @getPremCGMMDistributionGroupSplat
             Write-Verbose "Querying distribution group members for identity $($GroupObject.Identity)"
             [array]$GroupMembers = Get-PremCGMMDistributionGroupMember $GroupObject.Identity -ErrorAction Stop
 
