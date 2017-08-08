@@ -29,7 +29,7 @@ Function Import-CGMMExchOnline {
 		# New-PSSession
 		$SessionParameters = @{
 			'Name'					= $SessionName
-			'ConfigurationName'		= 'Microsoft.Exchange(CGMM)'
+			'ConfigurationName'		= 'Microsoft.Exchange(CGMMCloud)'
 			'ConnectionUri'			= 'https://outlook.office365.com/powershell-liveid/'
 			'Credential'			= $Credential
 			'Authentication'		= 'Basic'

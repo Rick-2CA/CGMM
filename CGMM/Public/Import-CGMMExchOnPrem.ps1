@@ -40,7 +40,7 @@ Function Import-CGMMExchOnPrem {
 		# New-PSSession
 		$SessionParameters = @{
 			'Name'					= $SessionName 
-			'ConfigurationName'		= 'Microsoft.Exchange(CGMM)'
+			'ConfigurationName'		= 'Microsoft.Exchange(CGMMOnPrem)'
 			'ConnectionUri'			= "http://$($ExchangeServer)/Powershell/?SerializationLevel=Full"
 			'Credential'			= $Credential
 			'Authentication'		= 'Kerberos'
