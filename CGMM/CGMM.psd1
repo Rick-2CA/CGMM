@@ -51,7 +51,7 @@ Description = 'Manage distribution group migrations between Exchange and Exchang
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+RequiredModules = @('Pester')
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -69,7 +69,7 @@ Description = 'Manage distribution group migrations between Exchange and Exchang
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @('Convert-CGMMStagingGroupCloud','Convert-CGMMStagingMailContact','Get-CGMMTargetGroup','Import-CGMMExchOnline','Import-CGMMExchOnPrem','New-CGMMStagingGroup','New-CGMMStagingMailContact','Set-CGMMStagingGroup','Set-CGMMStagingMailContact','Update-CGMMGroupMembershipCloud','Update-CGMMGroupMembershipOnPrem')
+FunctionsToExport = @('Convert-CGMMStagingGroupCloud','Convert-CGMMStagingMailContact','Get-CGMMTargetGroup','Import-CGMMExchOnline','Import-CGMMExchOnPrem','New-CGMMStagingGroup','New-CGMMStagingMailContact','Set-CGMMStagingGroup','Set-CGMMStagingMailContact','Test-CGMMTargetGroup','Update-CGMMGroupMembershipCloud','Update-CGMMGroupMembershipOnPrem')
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()

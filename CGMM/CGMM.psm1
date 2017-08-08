@@ -3,11 +3,13 @@
 param()
 
 Write-Verbose $PSScriptRoot
+$DefPesterTest = Join-Path (Resolve-Path $PSScriptRoot) "Tests\CGMM.TargetGroup.Tests.ps1"
 
 Write-Verbose "Creating Variables"
 New-Variable StagingGroupPrefix -Value 'CGMM_' -Scope Script
 New-Variable PremCmdletPrefix -Value 'PremCGMM' -Scope Script
 New-Variable CloudCmdletPrefix -Value 'CloudCGMM' -Scope Script
+New-Variable DefaultPesterTest -Value $DefPesterTest -Scope Script
 
 Write-Verbose 'Import everything in sub folders folder'
 ForEach ($Folder in @('Private','Public'))
