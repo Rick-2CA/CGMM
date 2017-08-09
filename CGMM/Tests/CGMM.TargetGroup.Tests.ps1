@@ -3,44 +3,66 @@ param (
     $DomainController
 )
 
+# Get the 'raw' distribution group properties
+$getPremCGMMDistributionGroupSplat = @{
+    Identity    = $Identity
+    ErrorAction = 'Stop'
+}
+If ($null -ne $DomainController) {
+    $getPremCGMMDistributionGroup.Add('DomainController',$DomainController)
+}
+Try {$DistributionGroup = Get-PremCGMMDistributionGroup @getPremCGMMDistributionGroupSplat}
+Catch {$Skip.Skip = $True}
+
 Describe "CGMM Exchange On-Premise Tests" -Tag EXOnPrem {
+    $Skip = @{Skip=$False}
     # Store and set EAP Value
     $EAPSaved = $Global:ErrorActionPreference
     $Global:ErrorActionPreference = 'Stop'
 
-    # Validate Users
-    Context 'Validate Members Exist in Exchange On-Premise' {
-        $Skip = @{}
-        $SkipThisContext = $False
+    If ($null -eq $DistributionGroup) {
+        $Skip.Skip = $True
+    }
 
-        # Get the 'raw' distribution group properties
-        $getPremCGMMDistributionGroupSplat = @{
-            Identity    = $Identity
-            ErrorAction = 'Stop'
-        }
-        If ($null -ne $DomainController) {
-            $getPremCGMMDistributionGroup.Add('DomainController',$DomainController)
-        }
-        Try {$DistributionGroup = Get-PremCGMMDistributionGroup @getPremCGMMDistributionGroupSplat}
-        Catch {$SkipThisContext = $True}
-
+    Context 'Distribution Group Configuration' {
         It 'Distribution Group Query Successful' {
-            $DistributionGroup.Name | Should Be $Identity
+            $DistributionGroup | Should Not BeNullOrEmpty
         }
 
+        # Only run this test if MemberJoinRestriction is ApprovalRequired
+        $MJRSkip = @{Skip = $False}
+        If ($DistributionGroup.MemberJoinRestriction -ne 'ApprovalRequired' -or $Skip.Skip -eq $True) {
+            $MJRSkip = @{Skip = $True}
+        }
+        It 'MemberJoinRestriction is set to ApprovalRequired and group is managed' @MJRSkip {
+            $DistributionGroup.ManagedBy | Should Not BeNullOrEmpty
+        }
+
+        It 'Alias does not contain spaces' @Skip {
+            $DistributionGroup.Alias | Should Not Match " "
+        }
+
+        It 'Alias does not have a period followed by another period' @Skip {
+            $DistributionGroup.Alias | Should Not Match "\.\."
+        }
+    }
+
+    # Validate Users
+    Context 'Validate Properties Have Exchange Objects As Members' {
         # Check properties that require members to exist in Exchange On-Premise
         $PropertiesToCheck = @(
             'AcceptMessagesOnlyFromSendersOrMembers','BypassModerationOnlyFromSendersOrMembers',
             'GrantSendOnBehalfTo','ManagedBy','ModeratedBy','RejectedSendersSendersOrMembers'
         )
         ForEach ($Property in $PropertiesToCheck) {
-            $Skip = @{}
+            $PropertySkip = @{Skip = $False}
             $PropertyCount = $DistributionGroup.$Property.count
-            If ($SkipThisContext -eq $True -or $PropertyCount -eq 0) {
-                $Skip = @{Skip = $True}
+            If ($Skip.Skip -eq $True -or $PropertyCount -eq 0) {
+                $PropertySkip = @{Skip = $True}
             }
-            It "All $PropertyCount members in property $Property are available in Exchange On-Premise" @Skip {
+            It "All $PropertyCount members in property $Property are available in Exchange On-Premise" @PropertySkip {
                 $CaughtMembers = $null
+                # Catch members that error.  They'll show up in the failed test results
                 $CaughtMembers = ForEach ($Member in $DistributionGroup.$Property) {
                     $getPremCGMMRecipientSplat = @{
                         Identity = $Member
@@ -56,6 +78,12 @@ Describe "CGMM Exchange On-Premise Tests" -Tag EXOnPrem {
                 $CaughtMembers | Should BeNullOrEmpty
             }
         }
+    }
+
+    Context 'Validate Exchange Online Compatibility' {
+        If ($Skip.Skip -eq $True) {
+            $Skip = @{Skip = $True}
+        }
 
         # Look for DistributionGroupMembers that aren't cloud supported recipient types
         $getPremCGMMDistributionGroupMemberSplat = @{
@@ -66,7 +94,7 @@ Describe "CGMM Exchange On-Premise Tests" -Tag EXOnPrem {
             $getPremCGMMDistributionGroup.Add('DomainController',$DomainController)
         }
         Try {$DistributionGroupMembers = Get-PremCGMMDistributionGroupMember @getPremCGMMDistributionGroupMemberSplat}
-        Catch {$SkipThisContext = $True}
+        Catch {$Skip.Skip = $True}
 
         $SupportedRecipientTypes = @(
             'DynamicDistributionGroup','MailContact','MailNonUniversalGroup',
@@ -74,7 +102,7 @@ Describe "CGMM Exchange On-Premise Tests" -Tag EXOnPrem {
             'MailUser','PublicFolder','UserMailbox'
         )
 
-        It 'Distribution Group Member Type Should Be Supported In Cloud' @Skip {
+        It 'Distribution Group Members RecipientType Should Be Supported In Cloud' @Skip {
             $NotSupported = ForEach ($Member in $DistributionGroupMembers) {
                 If ($SupportedRecipientTypes -notcontains $Member.RecipientType) {
                     $Member.Name
@@ -83,9 +111,9 @@ Describe "CGMM Exchange On-Premise Tests" -Tag EXOnPrem {
             $NotSupported | Should BeNullOrEmpty
         }
 
-        It 'Distribution Group is Synced to Exchange Online' @Skip {
+        It 'Distribution Group is Synced to Exchange Online (PrimarySMTPAddress Matches)' @Skip {
             $CloudGroupQuery = Get-CloudCGMMDistributionGroup -Identity $Identity -ErrorAction Stop
-            $CloudGroupQuery.Name | Should Be $Identity
+            $CloudGroupQuery.PrimarySMTPAddress | Should Be $DistributionGroup.PrimarySMTPAddress
         }
     }
     # Return EAP Value
@@ -93,42 +121,42 @@ Describe "CGMM Exchange On-Premise Tests" -Tag EXOnPrem {
 }
 
 Describe "CGMM MSOnline Tests" -Tag MSOnline {
+    $Skip = @{Skip=$False}
+    If ($Skip.Skip -eq $True) {
+        $Skip = @{Skip = $True}
+    }
     # Store and set EAP Value
     $EAPSaved = $Global:ErrorActionPreference
     $Global:ErrorActionPreference = 'Stop'
 
-    # Query the distribution group for the EmailAddresses property
-    $getPremCGMMDistributionGroupSplat = @{
-        Identity    = $Identity
-        ErrorAction = 'Stop'
+    If ($null -eq $DistributionGroup) {
+        $Skip.Skip = $True
     }
-    If ($null -ne $DomainController) {
-        $getPremCGMMDistributionGroup.Add('DomainController',$DomainController)
-    }
-    Try {$EmailAddresses = Get-PremCGMMDistributionGroup @getPremCGMMDistributionGroupSplat | Select-Object -ExpandProperty EmailAddresses}
-    Catch {}
 
     # Return EAP Value
     $Global:ErrorActionPreference = $EAPSaved
 
-    Context MSOnline {
-        # Get a list of MsolDomains from MSOnline
-        $Skip = @{}
-        If ($null -eq $EmailAddresses) {
-            $Skip = @{Skip = $True}
-        }
-        Try {
-            [array]$MsolDomains = Get-MsolDomain -ErrorAction Stop | Select-Object -Expand Name
-        }
-        Catch {$Skip = @{Skip = $True}}
+    # Get a list of MsolDomains from MSOnline
+    Try {
+        [array]$MsolDomains = Get-MsolDomain -ErrorAction Stop | Select-Object -Expand Name
+    }
+    Catch {$Skip.Skip = $True}
 
+    Context 'MSOnline' {
         # Show tests regarding the MSOnline query
-        It "MSOnline Successfully Queried" {
+        It "MSOnline Successfully Queried" @Skip {
             $Skip.Skip | Should Not Be $True
         }
 
         It "Found $($MsolDomains.count) MsolDomains" @Skip {
             $MSolDomains | Should Not BeNullOrEmpty
+        }
+    }
+
+    Context 'MSOnline Email Domain Validation' {
+        # Confirm the group was found & has addresses
+        It 'Distribution Group EmailAddresses Property Has Addresses' @Skip {
+            $DistributionGroup.EmailAddresses | Should Not BeNullOrEmpty
         }
 
         # Validate all assigned SMTP addresses are valid Msol domains
@@ -146,20 +174,23 @@ Describe "CGMM MSOnline Tests" -Tag MSOnline {
 }
 
 Describe "CGMM Exchange Online Tests" -Tag EXOnline {
+    $Skip = @{Skip=$False}
+    If ($Skip.Skip -eq $True) {
+        $Skip = @{Skip = $True}
+    }
+
     # Store and set EAP Value
     $EAPSaved = $Global:ErrorActionPreference
     $Global:ErrorActionPreference = 'Stop'
 
+    # Query for the CGMMTargetGroup.
+    Try {
+        $GroupObject = Get-CGMMTargetGroup -Identity $Identity -DomainController $DomainController
+    }
+    Catch {$Skip.$Skip = $True}
+
     # Validate Users
     Context 'Validate Members Exist in Exchange Online' {
-        $Skip = @{}
-        $SkipThisContext = $False
-
-        Try {
-            $GroupObject = Get-CGMMTargetGroup -Identity $Identity -DomainController $DomainController
-        }
-        Catch {$SkipThisContext = $True}
-
         It "Get-CGMMTargetGroup successfully queries" {
             $GroupObject | Should Not BeNullOrEmpty
         }
@@ -171,11 +202,13 @@ Describe "CGMM Exchange Online Tests" -Tag EXOnline {
             'Members','ModeratedBySmtpAddresses','RejectedSendersSmtpAddresses'
         )
         ForEach ($Property in $PropertiesToCheck) {
+            # Save the Skip value to reset 
+            $PropertySkip = @{Skip = $False}
             $PropertyCount = $GroupObject.$Property.count
-            If ($SkipThisContext -eq $True -or $PropertyCount -eq 0) {
-                $Skip = @{Skip = $True}
+            If ($Skip.Skip -eq $True -or $PropertyCount -eq 0) {
+                $PropertySkip = @{Skip = $True}
             }
-            It "All $PropertyCount members in property $Property are available in Exchange Online" @Skip {
+            It "All $PropertyCount members in property $Property are available in Exchange Online" @PropertySkip {
                 $CaughtMembers = $null
                 $CaughtMembers = ForEach ($Member in $GroupObject.$Property) {
                     Try {$null = Get-CloudCGMMRecipient $Member}
@@ -185,7 +218,6 @@ Describe "CGMM Exchange Online Tests" -Tag EXOnline {
                 }
                 $CaughtMembers | Should BeNullOrEmpty
             }
-            $Skip = @{}
         }
     }
 
