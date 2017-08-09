@@ -139,11 +139,12 @@ Task Deploy -Depends Build {
             $Params = @{
                 Path = $ProjectRoot
                 Force = $True
+                Verbose = $True
             }
 
             # Searches for .PSDeploy.ps1 files in the current and nested paths, and invokes their deployment
             Write-Host "Invoking PSDeploy" -ForegroundColor Cyan
-            Invoke-PSDeploy @Verbose @Params
+            Invoke-PSDeploy @Params
         }
         Else {
             "Skipping PS Gallery deployment: To deploy, ensure that...`n" + 
