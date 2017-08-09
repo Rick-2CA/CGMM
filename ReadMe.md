@@ -6,6 +6,7 @@ The CGMM module was designed to facilitate migrations of on premise Exchange dis
 * Requires Exchange Online connectivity.  See [Connect to Exchange Online PowerShell](https://technet.microsoft.com/en-us/library/jj984289(v=exchg.160).aspx).
 * Requires Exchange Server connectivity.  
 * Exchange Server 2010 or newer
+* [Pester](https://github.com/pester/Pester) (if installed via the PowerShell Gallery Pester will be automatically installed)
 
 ## Installation
 The module is available on the [PowerShell Gallery](https://www.powershellgallery.com/packages/cgmm) and can be installed by running:
@@ -19,17 +20,18 @@ The module requires connectivity to Exchange Server and Exchange Online at the s
 
     CommandType     Name                                               Version    Source
     -----------     ----                                               -------    ------
-    Function        Convert-CGMMStagingGroupCloud                      0.0.1.0    CGMM
-    Function        Convert-CGMMStagingMailContact                     0.0.1.0    CGMM
-    Function        Get-CGMMTargetGroup                                0.0.1.0    CGMM
-    Function        Import-CGMMExchOnline                              0.0.1.0    CGMM
-    Function        Import-CGMMExchOnPrem                              0.0.1.0    CGMM
-    Function        New-CGMMStagingGroup                               0.0.1.0    CGMM
-    Function        New-CGMMStagingMailContact                         0.0.1.0    CGMM
-    Function        Set-CGMMStagingGroup                               0.0.1.0    CGMM
-    Function        Set-CGMMStagingMailContact                         0.0.1.0    CGMM
-    Function        Update-CGMMGroupMembershipCloud                    0.0.1.0    CGMM
-    Function        Update-CGMMGroupMembershipOnPrem                   0.0.1.0    CGMM
+    Function        Convert-CGMMStagingGroupCloud                      0.0.8.36   CGMM
+    Function        Convert-CGMMStagingMailContact                     0.0.8.36   CGMM
+    Function        Get-CGMMTargetGroup                                0.0.8.36   CGMM
+    Function        Import-CGMMExchOnline                              0.0.8.36   CGMM
+    Function        Import-CGMMExchOnPrem                              0.0.8.36   CGMM
+    Function        New-CGMMStagingGroup                               0.0.8.36   CGMM
+    Function        New-CGMMStagingMailContact                         0.0.8.36   CGMM
+    Function        Set-CGMMStagingGroup                               0.0.8.36   CGMM
+    Function        Set-CGMMStagingMailContact                         0.0.8.36   CGMM
+    Function        Test-CGMMTargetGroup                               0.0.8.36   CGMM
+    Function        Update-CGMMGroupMembershipCloud                    0.0.8.36   CGMM
+    Function        Update-CGMMGroupMembershipOnPrem                   0.0.8.36   CGMM
 
 Documentation for each function is available with `Get-Help`.
 
@@ -44,9 +46,16 @@ Functions have been shared in the [Example Scripts](https://github.com/Rick-2CA/
     # Need a delay here for the sync so $Identity is no longer available in Exchange Online
     Complete-CGMMConversion "CGMM_$Identity" -HiddenFromAddressListsEnabled $False
 
-You should add some validation into `Start-CGMMStaging` and proper timing between the steps listed here into the process, but the example shows how the process could be simplified by using CGMM to write your migration scripts.
-
 AD replication impacts this process as it always has in regards to creating and editing Exchange objects.  Take advantage of the `Domain Controller` parameter available on all functions that work with on premise Exchange.  The `Start` and `Complete` example scripts both have the parameter available.
+
+## Test-CGMMTargetGroup
+As of version 0.0.8.36 a command called Test-CGMMTargetGroup exists to perform validation of migration candidates.  The command uses a Pester test included in the module to test various properties of on premise and cloud objects.  When running Test-CGMMTargetGroup you should also connect to MSOnline (`Connect-MsolService`) to validate email address domains exist in Office 365.
+
+## Known Process Issues
+Testing of the entire migration process has revealed a few scenarios that so far have proven better to solve outside of the module.  Please keep these scenarios in mind when performing migrations:
+
+* Azure AD Connect may write-back the cloud LegacyExchangeDN to an Exchange disabled object.  If you're disabling and not deleting be sure to clear the proxyaddresses of the object before attempting to run the `Convert-CGMMStagingMailContact` command or move the object out of the sync scope for one sync iteration.
+* Mail-enabled security groups may not be removed from Office 365 after being Exchange disabled.  This will cause `Convert-CGMMStagingGroupCloud` to fail.  The recommendation is to move the object out of the sync scope or one sync iteration.  Returning the object to its original OU after it's been removed in Office 365 will not have it recreated in the cloud on the next sync.
 
 ## Contributing
 The module was written to satisfy the requirements of a specific environment with the motivation of having it work in any environment.  
