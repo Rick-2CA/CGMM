@@ -9,7 +9,7 @@ $getPremCGMMDistributionGroupSplat = @{
     ErrorAction = 'Stop'
 }
 If ($null -ne $DomainController) {
-    $getPremCGMMDistributionGroup.Add('DomainController',$DomainController)
+    $getPremCGMMDistributionGroupSplat.Add('DomainController',$DomainController)
 }
 Try {$DistributionGroup = Get-PremCGMMDistributionGroup @getPremCGMMDistributionGroupSplat}
 Catch {$Skip.Skip = $True}
@@ -68,7 +68,7 @@ Describe "CGMM Exchange On-Premise Tests" -Tag EXOnPrem {
                         Identity = $Member
                     }
                     If ($null -ne $DomainController) {
-                        $getPremCGMMDistributionGroup.Add('DomainController',$DomainController)
+                        $getPremCGMMRecipientSplat.Add('DomainController',$DomainController)
                     }
                     Try {$null = Get-PremCGMMRecipient @getPremCGMMRecipientSplat}
                     Catch {
@@ -91,7 +91,7 @@ Describe "CGMM Exchange On-Premise Tests" -Tag EXOnPrem {
             ErrorAction = 'Stop'
         }
         If ($null -ne $DomainController) {
-            $getPremCGMMDistributionGroup.Add('DomainController',$DomainController)
+            $getPremCGMMDistributionGroupMemberSplat.Add('DomainController',$DomainController)
         }
         Try {$DistributionGroupMembers = Get-PremCGMMDistributionGroupMember @getPremCGMMDistributionGroupMemberSplat}
         Catch {$Skip.Skip = $True}
