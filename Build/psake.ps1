@@ -24,6 +24,9 @@ Task Default -Depends Deploy
 
 Task Init {
     $Lines
+    "Imported Modules:"
+    Get-Module
+    $Lines
     Set-Location $ProjectRoot
     "Build System Details:"
     Get-Item ENV:BH* | Format-List
