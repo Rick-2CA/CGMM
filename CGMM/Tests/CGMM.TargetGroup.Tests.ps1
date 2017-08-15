@@ -160,7 +160,7 @@ Describe "CGMM MSOnline Tests" -Tag MSOnline {
         }
 
         # Validate all assigned SMTP addresses are valid Msol domains
-        [array]$SMTPAddresses = $EmailAddresses | Where-Object {$_ -match '^SMTP:'}
+        [array]$SMTPAddresses = $DistributionGroup.EmailAddresses | Where-Object {$_ -match '^SMTP:'}
         [array]$Domains = ForEach ($Address in $SMTPAddresses) {
             $Address.Split("@")[1]
         }
