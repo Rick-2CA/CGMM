@@ -56,6 +56,15 @@ Function Test-CGMMTargetGroup {
             $PsCmdlet.ThrowTerminatingError($PSItem)
         }
 
+        # Test for MSOnline access - the only function that uses it, but the Pester tests will skip
+        # tests that utilize it if it's not available.
+        Try {Get-MsolAccountSku -ErrorAction Stop | Out-Null}
+        Catch {
+            If ($PSItem -match 'You must call the Connect-MsolService cmdlet before calling any other cmdlets.') {
+                Write-Warning 'Domain validation requires MSOnline connectivity, but is optional.  Run Connect-MsolService to avoid skipping those tests.'
+            }
+        }
+
         # Set Script Parameters
         $ScriptParameters = @{
             Identity   = $PSBoundParameters.Identity
