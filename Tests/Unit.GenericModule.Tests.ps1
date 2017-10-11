@@ -11,12 +11,12 @@ Describe "Generic Module Tests" -Tag UnitTest {
         Remove-Module $ModuleName -ErrorAction SilentlyContinue
         $ModuleInformation = Import-Module (Join-Path $moduleRoot "$moduleName.psd1") -Force -PassThru -ErrorAction Stop
         It "Module imported successfully" {
-            $True | Should Be $True
+            $True | Should -Be $True
         }
     }
     Catch {
         It "Module import encountered an error" {
-            $True | Should Be $False
+            $True | Should -Be $False
         }
     }
 
@@ -27,13 +27,13 @@ Describe "Generic Module Tests" -Tag UnitTest {
             ForEach-Object{If ($_ -match '\w+-\w+'){$Matches[0]}}
 
         It "AliasesToExport should not be a wildcard" {
-            $AliasesToExportString | Should Not Match "\'\*\'"
+            $AliasesToExportString | Should -Not -Match "\'\*\'"
         }
 
         $ExportedAliases = $ModuleInformation.ExportedAliases.Values.Name
         ForEach ($Alias in $DeclaredAliases) {
-            It "Alias Should Be Available $Alias " {
-                $ExportedAliases -contains $Alias | Should Be $True
+            It "Alias Should -Be Available $Alias " {
+                $ExportedAliases -contains $Alias | Should -Be $True
             }
         }
     }
@@ -45,46 +45,46 @@ Describe "Generic Module Tests" -Tag UnitTest {
             ForEach-Object{If ($_ -match '\w+-\w+'){$Matches[0]}}
 
         It "FunctionsToExport should not be a wildcard" {
-            $FunctionsToExportString | Should Not Match "\'\*\'"
+            $FunctionsToExportString | Should -Not -Match "\'\*\'"
         }
 
         $PublishedFunctions = $ModuleInformation.ExportedFunctions.Values.name
         ForEach ($PublicFunction in $DeclaredFunctions) {
             It "Function  Available: $PublicFunction " {
-                $PublishedFunctions -contains $PublicFunction | Should Be $True
+                $PublishedFunctions -contains $PublicFunction | Should -Be $True
             }
         }
     }
 
     # Other Manifest Properties
     Context 'Other Manifest Properties' {
-        It "Should contains RootModule"{
-            $ModuleInformation.RootModule | Should not BeNullOrEmpty
+        It "RootModule property has value"{
+            $ModuleInformation.RootModule | Should -Not -BeNullOrEmpty
         }
-        It "Should contains Author"{
-            $ModuleInformation.Author | Should not BeNullOrEmpty
+        It "Author property has value"{
+            $ModuleInformation.Author | Should -Not -BeNullOrEmpty
         }
-        It "Should contains Company Name"{
-            $ModuleInformation.CompanyName | Should not BeNullOrEmpty
+        It "Company Name property has value"{
+            $ModuleInformation.CompanyName | Should -Not -BeNullOrEmpty
         }
-        It "Should contains Description"{
-            $ModuleInformation.Description | Should not BeNullOrEmpty
+        It "Description property has value"{
+            $ModuleInformation.Description | Should -Not -BeNullOrEmpty
         }
-        It "Should contains Copyright"{
-            $ModuleInformation.Copyright | Should not BeNullOrEmpty
+        It "Copyright property has value"{
+            $ModuleInformation.Copyright | Should -Not -BeNullOrEmpty
         }
-        It "Should contains License"{
-            $ModuleInformation.LicenseURI | Should not BeNullOrEmpty
+        It "License property has value"{
+            $ModuleInformation.LicenseURI | Should -Not -BeNullOrEmpty
         }
-        It "Should contains a Project Link"{
-            $ModuleInformation.ProjectURI | Should not BeNullOrEmpty
+        It "Project Link property has value"{
+            $ModuleInformation.ProjectURI | Should -Not -BeNullOrEmpty
         }
-        It "Should contains a Tags (For the PSGallery)"{
-            $ModuleInformation.Tags.count | Should not BeNullOrEmpty
+        It "Tags (For the PSGallery) property has value"{
+            $ModuleInformation.Tags.count | Should -Not -BeNullOrEmpty
         }
         It "PSGallery Tags Should Not Contain Spaces" { 
             ForEach ($Tag in $ModuleInformation.PrivateData.Values.Tags) {
-                $Tag | Should Not Match '\s'
+                $Tag | Should -Not -Match '\s'
             }
         }
     }
