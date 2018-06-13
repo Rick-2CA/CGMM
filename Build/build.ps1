@@ -19,7 +19,9 @@ Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 # If ($null -eq $PowerShellGetv1131) {
 #     Find-Module PowerShellGet -RequiredVersion 1.1.3.1 | Install-Module
 # }
-# Remove-Module PowerShellGet -Force -ErrorAction SilentlyContinue
+Remove-Module PowerShellGet -Force -ErrorAction SilentlyContinue
+Find-Module PowerShellGet | Install-Module -Scope CurrentUser
+Import-Module -Name PowerShellGet -Force
 # Import-Module -Name PowerShellGet -RequiredVersion 1.1.3.1
 
 $Modules = @("Psake", "PSDeploy","BuildHelpers","PSScriptAnalyzer", "Pester","Posh-Git")

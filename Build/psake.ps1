@@ -98,10 +98,12 @@ Task Build -Depends Test {
         $Script:Version = [version](Step-Version ($ManifestVersion))
     }
     ## Always increment the 'revision' number with BHBuildNumber
-    $Script:Version = [version]::New($Version.Major, $Version.Minor, $Version.Build, $env:BHBuildNumber)
-    Write-Host "Using version: $Version"
+    If ($ENV:BHCommitMessage -notmatch '!keepversion') {
+        $Script:Version = [version]::New($Version.Major, $Version.Minor, $Version.Build, $env:BHBuildNumber)
+        Write-Host "Using version: $Version"
 
-    Update-Metadata -Path $env:BHPSModuleManifest -PropertyName ModuleVersion -Value $Version
+        Update-Metadata -Path $env:BHPSModuleManifest -PropertyName ModuleVersion -Value $Version
+    }
 }
 
 Task Deploy -Depends Build {
@@ -111,7 +113,11 @@ Task Deploy -Depends Build {
         Write-Warning -Message "Skipping version increment and publish for pull request #$env:APPVEYOR_PULL_REQUEST_NUMBER"
     }
     # GitHub & PSGallery Deployment
-    ElseIf ($ENV:BHBuildSystem -ne 'Unknown' -and $ENV:BHBranchName -eq "master") {
+    ElseIf (
+        $ENV:BHBuildSystem -ne 'Unknown' -and
+        $ENV:BHBranchName -eq "master" -and
+        $ENV:BHCommitMessage -notmatch '!keepversion'
+    ) {
         # Publish To GitHub
         $EAPSaved = $ErrorActionPreference
         $ErrorActionPreference = 'SilentlyContinue'
