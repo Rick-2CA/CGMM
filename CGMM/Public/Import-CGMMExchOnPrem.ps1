@@ -33,13 +33,12 @@ Function Import-CGMMExchOnPrem {
 	)
 
 	Begin {}
-	
+
 	Process {
 		$Prefix = $PremCmdletPrefix
 
 		# New-PSSession
 		$SessionParameters = @{
-			'Name'					= $SessionName 
 			'ConfigurationName'		= 'Microsoft.Exchange(CGMMOnPrem)'
 			'ConnectionUri'			= "http://$($ExchangeServer)/Powershell/?SerializationLevel=Full"
 			'Credential'			= $Credential
@@ -59,7 +58,7 @@ Function Import-CGMMExchOnPrem {
 		Catch {
 			$PsCmdlet.ThrowTerminatingError($PSItem)
 		}
-		
+
 		# Import-Module
 		$ModuleParameters = @{
 			'ModuleInfo'	= $ModuleInfo
@@ -69,7 +68,7 @@ Function Import-CGMMExchOnPrem {
 		Catch {
 			$PsCmdlet.ThrowTerminatingError($PSItem)
 		}
-		
+
 		# Set-ADServerSettings to view the entire forest
 		If ($ViewEntireForest) {
 			$ADServerSettings = Get-Command "Set-$($Prefix)ADServerSettings"
@@ -78,6 +77,6 @@ Function Import-CGMMExchOnPrem {
 			}
 		}
 	}
-	
+
 	End {}
 }

@@ -23,12 +23,11 @@ Function Import-CGMMExchOnline {
 	)
 
 	Begin {}
-	
+
 	Process {
 		$Prefix = $CloudCmdletPrefix
 		# New-PSSession
 		$SessionParameters = @{
-			'Name'					= $SessionName
 			'ConfigurationName'		= 'Microsoft.Exchange(CGMMCloud)'
 			'ConnectionUri'			= 'https://outlook.office365.com/powershell-liveid/'
 			'Credential'			= $Credential
@@ -38,20 +37,20 @@ Function Import-CGMMExchOnline {
 		Catch {
 			$PsCmdlet.ThrowTerminatingError($PSItem)
 		}
-		 
+
 		# Import-PSSession
 		$PSSessionParameters = @{
-			'Session'	= $Session	
+			'Session'	= $Session
 		}
 		If ($Prefix) {$PSSessionParameters.Add("Prefix",$Prefix)}
 		Try {$ModuleInfo = Import-PSSession @PSSessionParameters -AllowClobber -DisableNameChecking -ErrorAction Stop}
 		Catch {
 			$PsCmdlet.ThrowTerminatingError($PSItem)
 		}
-		
+
 		# Import-Module
 		$ModuleParameters = @{
-			'ModuleInfo'	= $ModuleInfo	
+			'ModuleInfo'	= $ModuleInfo
 		}
 		If ($Prefix) {$ModuleParameters.Add("Prefix",$Prefix)}
 		Try {
@@ -61,6 +60,6 @@ Function Import-CGMMExchOnline {
 			$PsCmdlet.ThrowTerminatingError($PSItem)
 		}
 	}
-	
+
 	End {}
 }
