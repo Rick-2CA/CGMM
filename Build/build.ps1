@@ -26,11 +26,11 @@ $Modules = @("Psake", "PSDeploy","BuildHelpers","PSScriptAnalyzer", "Pester","Po
 
 ForEach ($Module in $Modules) {
     If (-not (Get-Module -Name $Module -ListAvailable)) {
-            Switch ($Module) {
-                Pester  {Install-Module $Module -Force -SkipPublisherCheck}
-                Default {Install-Module $Module -Force}
-            }
-           
+        Switch ($Module) {
+            Pester              {Install-Module $Module -Force -SkipPublisherCheck}
+            PSScriptAnalyzer    {Install-Module $Module -Force -SkipPublisherCheck}
+            Default             {Install-Module $Module -Force}
+        }
     }
      Import-Module $Module
 }
