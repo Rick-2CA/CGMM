@@ -113,35 +113,39 @@ Task Deploy -Depends Build {
         Write-Warning -Message "Skipping version increment and publish for pull request #$env:APPVEYOR_PULL_REQUEST_NUMBER"
     }
     # GitHub & PSGallery Deployment
-    ElseIf (
-        $ENV:BHBuildSystem -ne 'Unknown' -and
-        $ENV:BHBranchName -eq "master" -and
-        $ENV:BHCommitMessage -notmatch '!keepversion'
-    ) {
+    ElseIf ($ENV:BHBuildSystem -ne 'Unknown' -and $ENV:BHBranchName -eq "master") {
         # Publish To GitHub
-        $EAPSaved = $ErrorActionPreference
-        $ErrorActionPreference = 'SilentlyContinue'
-        Try {
-            # Set up a path to the git.exe cmd, import posh-git to give us control over git, and then push changes to GitHub
-            # Note that "update version" is included in the appveyor.yml file's "skip a build" regex to avoid a loop
-            Write-Host "Log:  Location $(Get-Location)"
-            Write-Host 'Log:  git checkout master'
-            git checkout master
-            Write-Host "Log:  git add all"
-            git add --all
-            Write-Host 'Log:  git status'
-            git status
-            Write-Host "Log:  git commit -s -m "Update version to $Version""
-            git commit -s -m "Update version to $Version"
-            Write-Host 'Log:  git push origin master'
-            git push origin master
-            Write-Host "Module version $Version published to GitHub." -ForegroundColor Cyan
+        If ($ENV:BHCommitMessage -notmatch '!keepversion') {
+            $EAPSaved = $ErrorActionPreference
+            $ErrorActionPreference = 'SilentlyContinue'
+            Try {
+                # Set up a path to the git.exe cmd, import posh-git to give us control over git, and then push changes to GitHub
+                # Note that "update version" is included in the appveyor.yml file's "skip a build" regex to avoid a loop
+                Write-Host "Log:  Location $(Get-Location)"
+                Write-Host 'Log:  git checkout master'
+                git checkout master
+                Write-Host "Log:  git add all"
+                git add --all
+                Write-Host 'Log:  git status'
+                git status
+                Write-Host "Log:  git commit -s -m "Update version to $Version""
+                git commit -s -m "Update version to $Version"
+                Write-Host 'Log:  git push origin master'
+                git push origin master
+                Write-Host "Module version $Version published to GitHub." -ForegroundColor Cyan
+            }
+            Catch {
+                Write-Warning "Publishing update $Version to GitHub failed."
+                Throw $_
+            }
+            $ErrorActionPreference = $EAPSaved
         }
-        Catch {
-            Write-Warning "Publishing update $Version to GitHub failed."
-            Throw $_
+        Else {
+            "Skipping GitHub deployment: To deploy, ensure that...`n" +
+            "`t* You are in a known build system (Current: $ENV:BHBuildSystem)`n" +
+            "`t* You are committing to the master branch (Current: $ENV:BHBranchName) `n" +
+            "`t* Your commit message does not include !keepversion (Current: $ENV:BHCommitMessage)"
         }
-        $ErrorActionPreference = $EAPSaved
 
         # Publish to PSGallery
         If ($ENV:BHCommitMessage -match '!deploy') {
@@ -167,6 +171,7 @@ Task Deploy -Depends Build {
         "Skipping GitHub & PSGallery deployment: To deploy, ensure that...`n" +
         "`t* You are in a known build system (Current: $ENV:BHBuildSystem)`n" +
         "`t* You are committing to the master branch (Current: $ENV:BHBranchName) `n" +
-        "`t* Your commit message includes !deploy (Current: $ENV:BHCommitMessage)"
+        "`t* Your commit message includes !deploy (Current: $ENV:BHCommitMessage)" +
+        "`t* Your commit message does not include !keepversion (Current: $ENV:BHCommitMessage)"
     }
 }

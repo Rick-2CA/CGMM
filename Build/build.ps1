@@ -13,7 +13,7 @@ Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
 # PowerShellGet Work Around
 Remove-Module PowerShellGet -Force -ErrorAction SilentlyContinue
-Find-Module PowerShellGet | Install-Module -Scope CurrentUser -SkipPublisherCheck
+Find-Module PowerShellGet | Install-Module -Force -SkipPublisherCheck
 Import-Module -Name PowerShellGet -Force
 
 $Modules = @("Psake", "PSDeploy","BuildHelpers","PSScriptAnalyzer", "Pester","Posh-Git")
@@ -22,7 +22,6 @@ ForEach ($Module in $Modules) {
     If (-not (Get-Module -Name $Module -ListAvailable)) {
         Switch ($Module) {
             Pester              {Install-Module $Module -Force -SkipPublisherCheck}
-            PSScriptAnalyzer    {Install-Module $Module -Force -SkipPublisherCheck}
             Default             {Install-Module $Module -Force}
         }
     }
