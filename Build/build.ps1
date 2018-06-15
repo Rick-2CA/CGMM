@@ -12,7 +12,6 @@ param ($Task = 'Default')
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
 # PowerShellGet Work Around
-Remove-Module PowerShellGet -Force -ErrorAction SilentlyContinue
 Find-Module PowerShellGet | Install-Module -Force -SkipPublisherCheck
 Import-Module -Name PowerShellGet -Force
 
