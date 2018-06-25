@@ -43,36 +43,21 @@ Import-Module -Name PowerShellGet -Force
 Import-PackageProvider -Name PowerShellGet -Force -RequiredVersion $ManualModuleInstalls['PowerShellGet']
 
 # Install build dependency modules
-$Modules = @("Psake","PSDeploy","BuildHelpers","Pester","Posh-Git","PSScriptAnalyzer")
+$Modules = @("Psake","PSDeploy","BuildHelpers","Pester","Posh-Git")
 
 ForEach ($Module in $Modules) {
     If (-not (Get-Module -Name $Module -ListAvailable)) {
         Switch ($Module) {
-            Pester              {Write-Warning "$Module, Pester";PowerShellGet\Install-Module $Module -Force -SkipPublisherCheck}
-            Default             {Write-Warning "$Module, Default";PowerShellGet\Install-Module $Module -Force}
+            Pester              {PowerShellGet\Install-Module $Module -Force -SkipPublisherCheck}
+            Default             {PowerShellGet\Install-Module $Module -Force}
         }
     }
 
     Try {
-        Write-Warning "Importing $Module"
         Import-Module $Module -Force -ErrorAction Stop
     }
     Catch {
-        If ($Module -eq 'PSScriptAnalyzer') {
-            Write-Warning 'Attempting PSScriptAnalyzer install a second time'
-            Try {
-                Get-Module $Module -ListAvailable
-                Install-Module $Module -Force -ErrorAction Stop -SkipPublisherCheck
-                Start-Sleep -Seconds 5
-                Import-Module $Module -Force -ErrorAction Stop
-            }
-            Catch {
-                $PSCmdlet.ThrowTerminatingError($PSItem)
-            }
-        }
         Write-Error $PSItem
-        Write-Host "Starting hour long sleep"
-        Start-Sleep -Seconds 3600
         Exit
     }
 }
