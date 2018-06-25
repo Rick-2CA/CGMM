@@ -152,7 +152,7 @@ Task Deploy -Depends Build {
             $Params = @{
                 Path = $ProjectRoot
                 Force = $True
-                Verbose = $True
+                Verbose = $False
             }
 
             # Searches for .PSDeploy.ps1 files in the current and nested paths, and invokes their deployment

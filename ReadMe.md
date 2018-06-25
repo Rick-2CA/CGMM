@@ -2,6 +2,10 @@
 
 The CGMM module was designed to facilitate migrations of on premise Exchange distribution groups to Exchange Online distribution groups.  On premise group settings are staged in Exchange Online with a prefix for values that must be unique.  Upon your review of the staged object the on premise object can be disabled, a sync performed to remove the object from the cloud, and the stage group updated to remove the prefix where it now takes the place as the production group. An on premise mail contact can also be staged and updated for environments that require one.
 
+## Version 1
+
+The first flavor of version 1 published is 1.0.12.57.  There are just minor differences, cleanup type of changes, between 0.0.8.36 and 1.0.12.57.  The numerous minor changes are due to build troubleshooting and do not represent module code changes.
+
 ## Requirements
 
 * PowerShell v4
@@ -24,18 +28,18 @@ The module requires connectivity to Exchange Server and Exchange Online at the s
 
     CommandType     Name                                               Version    Source
     -----------     ----                                               -------    ------
-    Function        Convert-CGMMStagingGroupCloud                      0.0.8.36   CGMM
-    Function        Convert-CGMMStagingMailContact                     0.0.8.36   CGMM
-    Function        Get-CGMMTargetGroup                                0.0.8.36   CGMM
-    Function        Import-CGMMExchOnline                              0.0.8.36   CGMM
-    Function        Import-CGMMExchOnPrem                              0.0.8.36   CGMM
-    Function        New-CGMMStagingGroup                               0.0.8.36   CGMM
-    Function        New-CGMMStagingMailContact                         0.0.8.36   CGMM
-    Function        Set-CGMMStagingGroup                               0.0.8.36   CGMM
-    Function        Set-CGMMStagingMailContact                         0.0.8.36   CGMM
-    Function        Test-CGMMTargetGroup                               0.0.8.36   CGMM
-    Function        Update-CGMMGroupMembershipCloud                    0.0.8.36   CGMM
-    Function        Update-CGMMGroupMembershipOnPrem                   0.0.8.36   CGMM
+    Function        Convert-CGMMStagingGroupCloud                      1.0.12.57   CGMM
+    Function        Convert-CGMMStagingMailContact                     1.0.12.57   CGMM
+    Function        Get-CGMMTargetGroup                                1.0.12.57   CGMM
+    Function        Import-CGMMExchOnline                              1.0.12.57   CGMM
+    Function        Import-CGMMExchOnPrem                              1.0.12.57   CGMM
+    Function        New-CGMMStagingGroup                               1.0.12.57   CGMM
+    Function        New-CGMMStagingMailContact                         1.0.12.57   CGMM
+    Function        Set-CGMMStagingGroup                               1.0.12.57   CGMM
+    Function        Set-CGMMStagingMailContact                         1.0.12.57   CGMM
+    Function        Test-CGMMTargetGroup                               1.0.12.57   CGMM
+    Function        Update-CGMMGroupMembershipCloud                    1.0.12.57   CGMM
+    Function        Update-CGMMGroupMembershipOnPrem                   1.0.12.57   CGMM
 
 Documentation for each function is available with `Get-Help`.
 
