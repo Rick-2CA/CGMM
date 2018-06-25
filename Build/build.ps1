@@ -8,59 +8,39 @@ Warren F. (RamblingCookieMonster)
 [cmdletbinding()]
 param ($Task = 'Default')
 
-Write-Warning 'Get-Module'
-Get-Module
-Write-Warning '-------------------------------'
-Write-Warning '-------------------------------'
-Write-Warning '-------------------------------'
-
-# Grab nuget bits, install modules, set build variables, start build.
-Write-Warning 'Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null'
+# Grab NuGet bits
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
-# PowerShellGet Work Around
+# Update PowerShellGet & PackageManagement modules.  Required to update the modules without loading them first
+# (update themselves) because PackageManagement will keep using the version first loaded.
+$ManualModuleInstalls = @{
+    'PowerShellGet' = '1.6.5'
+    'PackageManagement' = '1.1.7.2'
+}
+$ManualModuleKeys = $ManualModuleInstalls.Keys
 
-# Write-Warning 'Install-Module PowerShellGet'
-# Find-Module PowerShellGet | Install-Module -Force -SkipPublisherCheck
-# Write-Warning 'Remove-Module PowerShellGet,PackageManagement'
-# Remove-Module PowerShellGet,PackageManagement -Force
-# Write-Warning 'Import-Module -Name PowerShellGet -Force'
-# Import-Module -Name PowerShellGet -Force
+ForEach ($ManualModuleKey in $ManualModuleKeys) {
 
-$modulename = 'PowerShellGet'
-$ModuleVersion = '1.6.5'
+    $ModuleName = $ManualModuleKey
+    $ModuleVersion = $ManualModuleInstalls[$ManualModuleKey]
 
-$file = 'https://www.powershellgallery.com/api/v2/package/{0}/{1}' -f $ModuleName,$ModuleVersion
-$ModulePath = ('\{0}\{1}\' -f $ModuleName, $ModuleVersion)
-$tempfilepath = ('{0}\PSGalleryFix{1}{2}.{3}.zip' -f $env:TEMP, $ModulePath, $ModuleName, $ModuleVersion)
-$null = New-Item -Path $env:TEMP\PSGalleryFix\$ModulePath -ItemType Directory -Force
-Invoke-WebRequest -Uri $file -UseBasicParsing -OutFile $tempfilepath
-$ExpandPath = ('{0}\WindowsPowerShell\Modules{1}' -f $env:ProgramFiles, $ModulePath)
-Expand-Archive -Path $tempfilepath -DestinationPath $ExpandPath -Force
-Remove-Item -Path $tempfilepath
+    $File         = 'https://www.powershellgallery.com/api/v2/package/{0}/{1}' -f $ModuleName, $ModuleVersion
+    $ModulePath   = '\{0}\{1}\' -f $ModuleName, $ModuleVersion
+    $TempFilePath = '{0}\PSGalleryFix{1}{2}.{3}.zip' -f $env:TEMP, $ModulePath, $ModuleName, $ModuleVersion
+    $ExpandPath   = '{0}\WindowsPowerShell\Modules{1}' -f $env:ProgramFiles, $ModulePath
 
-$modulename = 'PackageManagement'
-$ModuleVersion = '1.1.7.2'
-
-$file = 'https://www.powershellgallery.com/api/v2/package/{0}/{1}' -f $ModuleName,$ModuleVersion
-$ModulePath = ('\{0}\{1}\' -f $ModuleName, $ModuleVersion)
-$tempfilepath = ('{0}\PSGalleryFix{1}{2}.{3}.zip' -f $env:TEMP, $ModulePath, $ModuleName, $ModuleVersion)
-$null = New-Item -Path $env:TEMP\PSGalleryFix\$ModulePath -ItemType Directory -Force
-Invoke-WebRequest -Uri $file -UseBasicParsing -OutFile $tempfilepath
-$ExpandPath = ('{0}\WindowsPowerShell\Modules{1}' -f $env:ProgramFiles, $ModulePath)
-Expand-Archive -Path $tempfilepath -DestinationPath $ExpandPath -Force
-Remove-Item -Path $tempfilepath
+    $null = New-Item -Path $env:TEMP\PSGalleryFix\$ModulePath -ItemType Directory -Force
+    Invoke-WebRequest -Uri $File -UseBasicParsing -OutFile $TempFilePath
+    Expand-Archive -Path $TempFilePath -DestinationPath $ExpandPath -Force
+    Remove-Item -Path $TempFilePath
+}
 
 Remove-Module PowerShellGet,PackageManagement -Force
 Import-Module -Name PowerShellGet -Force
-Import-PackageProvider -Name PowerShellGet -Force -RequiredVersion 1.6.5
+Import-PackageProvider -Name PowerShellGet -Force -RequiredVersion $ManualModuleInstalls['PowerShellGet']
 
-Write-Warning 'Get-Module'
-Get-Module
-Write-Warning '-------------------------------'
-Write-Warning '-------------------------------'
-Write-Warning '-------------------------------'
-$Modules = @("Psake", "PSDeploy","BuildHelpers","PSScriptAnalyzer", "Pester","Posh-Git")
+# Install build dependency modules
+$Modules = @("Psake","PSDeploy","BuildHelpers","PSScriptAnalyzer","Pester","Posh-Git")
 
 ForEach ($Module in $Modules) {
     If (-not (Get-Module -Name $Module -ListAvailable)) {
@@ -69,7 +49,14 @@ ForEach ($Module in $Modules) {
             Default             {PowerShellGet\Install-Module $Module -Force}
         }
     }
-    Import-Module $Module
+
+    Try {
+        Import-Module $Module -ErrorAction Stop
+    }
+    Catch {
+        Write-Error $PSItem
+        Exit
+    }
 }
 
 $Path = (Resolve-Path $PSScriptRoot\..).Path
