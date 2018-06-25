@@ -13,8 +13,11 @@ Write-Warning 'Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null'
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
 # PowerShellGet Work Around
+
 Write-Warning 'Install-Module PowerShellGet'
 Find-Module PowerShellGet | Install-Module -Force -SkipPublisherCheck
+Write-Warning 'Remove-Module PowerShellGet,PackageManagement'
+Remove-Module PowerShellGet,PackageManagement -Force
 Write-Warning 'Import-Module -Name PowerShellGet -Force'
 Import-Module -Name PowerShellGet -Force
 
@@ -26,8 +29,8 @@ $Modules = @("Psake", "PSDeploy","BuildHelpers","PSScriptAnalyzer", "Pester","Po
 ForEach ($Module in $Modules) {
     If (-not (Get-Module -Name $Module -ListAvailable)) {
         Switch ($Module) {
-            Pester              {Install-Module $Module -Force -SkipPublisherCheck}
-            Default             {Install-Module $Module -Force}
+            Pester              {PowerShellGet\Install-Module $Module -Force -SkipPublisherCheck}
+            Default             {PowerShellGet\Install-Module $Module -Force}
         }
     }
     Import-Module $Module
