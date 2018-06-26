@@ -12,7 +12,7 @@
 RootModule = 'CGMM.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.12.58'
+ModuleVersion = '1.0.12.59'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
