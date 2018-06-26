@@ -20,7 +20,6 @@ $ManualModuleInstalls = @{
 $ManualModuleKeys = $ManualModuleInstalls.Keys
 
 ForEach ($ManualModuleKey in $ManualModuleKeys) {
-
     $ModuleName = $ManualModuleKey
     $ModuleVersion = $ManualModuleInstalls[$ManualModuleKey]
 
