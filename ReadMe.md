@@ -66,7 +66,7 @@ As of version 0.0.8.36 a command called Test-CGMMTargetGroup exists to perform v
 Testing of the entire migration process has revealed a few scenarios that so far have proven better to solve outside of the module.  Please keep these scenarios in mind when performing migrations:
 
 * Azure AD Connect may write-back the cloud LegacyExchangeDN to an Exchange disabled object.  If you're disabling and not deleting be sure to clear the proxyaddresses of the object before attempting to run the `Convert-CGMMStagingMailContact` command or move the object out of the sync scope for one sync iteration.
-* Mail-enabled security groups may not be removed from Office 365 after being Exchange disabled.  This will cause `Convert-CGMMStagingGroupCloud` to fail.  The recommendation is to move the object out of the sync scope or one sync iteration.  Returning the object to its original OU after it's been removed in Office 365 will not have it recreated in the cloud on the next sync.
+* Mail-enabled security groups may not be removed from Office 365 after being Exchange disabled.  This will cause `Convert-CGMMStagingGroupCloud` to fail.  The recommendation is to move the object out of the sync scope for one sync iteration.  Returning the object to its original OU after it's been removed in Office 365 will not have it recreated in the cloud on the next sync.
 
 ## Contributing
 
