@@ -24,8 +24,23 @@ Describe "CGMM Exchange On-Premise Tests" -Tag EXOnPrem {
 
     Context 'Distribution Group Configuration' {
         It 'Distribution group found on premise' {
-            $getPremCGMMDistributionGroupSplat.ErrorAction = 'Continue'
-            {Get-PremCGMMDistributionGroup @getPremCGMMDistributionGroupSplat} | Should -Not Throw
+            $getPremCGMMDistributionGroupSplat = @{
+                Identity    = $Identity
+                ErrorAction = 'Stop'
+            }
+            If ($null -ne $DomainController) {
+                $getPremCGMMDistributionGroupSplat.Add('DomainController',$DomainController)
+            }
+            {Get-PremCGMMDistributionGroup @getPremCGMMDistributionGroupSplat} | Should -Not -Throw
+        }
+
+        It 'Distribution group is not a member of another on premise group' {
+            $getGroupSplat = @{
+                ResultSize = 'Unlimited'
+                Filter     = "Members -eq '$($DistributionGroup.Identity)'"
+            }
+            $MemberOf = (Get-PremCGMMGroup @getGroupSplat).Name
+            $MemberOf | Should -BeNullOrEmpty
         }
 
         # Only run this test if MemberJoinRestriction is ApprovalRequired or the describe skip trigger is True
@@ -175,7 +190,7 @@ Describe "CGMM Exchange Online Tests" -Tag EXOnline {
     Context 'Validate Members Exist in Exchange Online' {
         It "Get-CGMMTargetGroup successfully queries" {
             $getCGMMTargetGroupSplat.ErrorAction = 'Continue'
-            {$GroupObject = Get-CGMMTargetGroup @getCGMMTargetGroupSplat} | Should -Not Throw
+            {$GroupObject = Get-CGMMTargetGroup @getCGMMTargetGroupSplat} | Should -Not -Throw
         }
 
         # Check properties that require members to exist in Exchange Online
