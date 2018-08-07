@@ -144,9 +144,18 @@ Function Convert-CGMMStagingMailContact {
                     Do {
                         Write-Verbose "Waiting for the renamed contact to be available to reenable the email address policy"
                         $i++
-                        If ($i -gt 6) {Throw "Timed out waiting for contact $NewIdentity to be available for configuration. "}
+                        If ($i -gt 6) {
+                            Throw "Timed out waiting for contact $NewIdentity to be available for configuration."
+                        }
                         Start-Sleep -Seconds 5
-                        $NewIdentityReady = Get-PremCGMMMailContact $NewIdentity -ErrorAction SilentlyContinue
+                        $getPremCGMMMailContactSplat = @{
+                            Identity    = $NewIdentity
+                            ErrorAction = 'Stop'
+                        }
+                        If ($null -ne $PSBoundParameters.DomainController) {
+                            $getPremCGMMMailContactSplat.Add('DomainController',$PSBoundParameters.DomainController)
+                        }
+                        $NewIdentityReady = Get-PremCGMMMailContact @getPremCGMMMailContactSplat
                     }
                     While ($null -eq $NewIdentityReady)
                     Write-Verbose "Reenabling the email address policy on contact $NewIdentity"
