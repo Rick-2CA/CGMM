@@ -77,5 +77,6 @@ Features in mind for future releases:
 * Allow the cmdlet prefixes to be configurable variables.
 * Allow migration from on premise distribution groups to cloud unified groups
 * Restoration functions to get you back to the original state by use of the export file from `Get-CGMMTargetGroup`
+* Allow Test-CGMMTargetGroup to accept custom tests
 
 Feature additions are heavily influenced by the needs of my environment and your contributions!
