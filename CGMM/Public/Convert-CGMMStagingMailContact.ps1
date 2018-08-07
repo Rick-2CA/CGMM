@@ -39,7 +39,7 @@ Function Convert-CGMMStagingMailContact {
 
         [Parameter()]
         [Boolean]$HiddenFromAddressListsEnabled,
-        
+
         [Parameter()]
         [string]$DomainController
     )
@@ -49,30 +49,40 @@ Function Convert-CGMMStagingMailContact {
         Try {
             # Check for Exchange cmdlet availability in On Prem & Exchange Online
             Test-CGMMCmdletAccess -Environment OnPrem -ErrorAction Stop
-            
+
             $EAPSaved = $Global:ErrorActionPreference
             $Global:ErrorActionPreference = 'Stop'
 
             # Get the target group
             Write-Verbose "Querying for mail contact $($PSBoundParameters.Identity)"
-            $MailContact = Get-PremCGMMMailContact -Identity $PSBoundParameters.Identity -ErrorAction Stop
+            $getPremCGMMMailContactSplat = @{
+                Identity    = $PSBoundParameters.Identity
+                ErrorAction = 'Stop'
+            }
+            If ($null -ne $PSBoundParameters.DomainController) {
+                $getPremCGMMMailContactSplat.Add('DomainController',$PSBoundParameters.DomainController)
+            }
+            $MailContact = Get-PremCGMMMailContact @getPremCGMMMailContactSplat
 
             # Validate that the intended rename is available
             $OldGroupName = ($PSBoundParameters.Identity -replace $StagingGroupPrefix)
-            $GetDistributionGroupSettings = @{
+            $GetDistributionGroupSplat = @{
                 Identity    = $OldGroupName
                 ErrorAction = 'SilentlyContinue'
             }
+            If ($null -ne $PSBoundParameters.DomainController) {
+                $GetDistributionGroupSplat.Add('DomainController',$PSBoundParameters.DomainController)
+            }
             Write-Verbose "Querying for the intended group name $OldGroupName, which shouldn't exist, for assignment to the contact."
-            If ($null -ne (Get-PremCGMMDistributionGroup @GetDistributionGroupSettings)) {
-                $ErrorText = "The distribution group {0} must be removed before the staging prefix may be removed from mail contact {1}." -f $GetDistributionGroupSettings['Identity'],$PSBoundParameters.Identity 
+            If ($null -ne (Get-PremCGMMDistributionGroup @GetDistributionGroupSplat)) {
+                $ErrorText = "The distribution group {0} must be removed before the staging prefix may be removed from mail contact {1}." -f $GetDistributionGroupSplat['Identity'],$PSBoundParameters.Identity
                 Write-Error $ErrorText -ErrorAction Stop
             }
 
             # Find all properties that were prefixed.
             Write-Verbose "Identifing and processing prefixed properties"
-            $PropertiesToProcess = $MailContact.PSObject.Properties | 
-                Where-Object {$_.value -match $StagingGroupPrefix} | 
+            $PropertiesToProcess = $MailContact.PSObject.Properties |
+                Where-Object {$_.value -match $StagingGroupPrefix} |
                 Select-Object Name,Value
 
             # Setup a hash to be used to splat the non-prefixed values
@@ -95,7 +105,7 @@ Function Convert-CGMMStagingMailContact {
                     }
                     Default {Write-Warning "Property type not accounted for:  $($Property.Name).  Manual intervention required."}
                 }
-                
+
                 # Reconstruct the EmailAddresses property to hash the required adds and removes
                 # Any non-prefixed addresses that happen to have been assigned will remain unchanged
                 If ($Property.Name -eq 'EmailAddresses') {
@@ -113,7 +123,7 @@ Function Convert-CGMMStagingMailContact {
                 If ($null -ne $SetMailContactSettings['Alias']) {$NewIdentity = $SetMailContactSettings['Alias']}
                 Else {$NewIdentity = $MailContact.Alias}
             }
-            
+
             # Finish up the hash by adding provide parameters.
             $SetMailContactSettings.Add('Identity',$PSBoundParameters.Identity)
             If ($null -ne $PSBoundParameters.HiddenFromAddressListsEnabled) {
@@ -123,10 +133,8 @@ Function Convert-CGMMStagingMailContact {
                     )
             }
             If ($null -ne $PSBoundParameters.DomainController) {
-                Write-Verbose "Adding DomainController with value $($PSBoundParameters.HiddenFromAddressListsEnabled)"
-                $SetMailContactSettings.Add(
-                    'DomainController',$PSBoundParameters.DomainController
-                    )
+                Write-Verbose "Adding DomainController with value $($PSBoundParameters.DomainController)"
+                $SetMailContactSettings.Add('DomainController',$PSBoundParameters.DomainController)
             }
 
             If ($PSCmdlet.ShouldProcess($Identity,$MyInvocation.MyCommand)) {
@@ -137,12 +145,19 @@ Function Convert-CGMMStagingMailContact {
                         Write-Verbose "Waiting for the renamed contact to be available to reenable the email address policy"
                         $i++
                         If ($i -gt 6) {Throw "Timed out waiting for contact $NewIdentity to be available for configuration. "}
-                        Start-Sleep -Seconds 5  
+                        Start-Sleep -Seconds 5
                         $NewIdentityReady = Get-PremCGMMMailContact $NewIdentity -ErrorAction SilentlyContinue
                     }
                     While ($null -eq $NewIdentityReady)
                     Write-Verbose "Reenabling the email address policy on contact $NewIdentity"
-                    Set-PremCGMMMailContact -Identity $NewIdentity -EmailAddressPolicyEnabled $True
+                    $setPremCGMMMailContactSplat = @{
+                        Identity                  = $NewIdentity
+                        EmailAddressPolicyEnabled = $True
+                    }
+                    If ($null -ne $PSBoundParameters.DomainController) {
+                        $setPremCGMMMailContactSplat.Add('DomainController',$PSBoundParameters.DomainController)
+                    }
+                    Set-PremCGMMMailContact @setPremCGMMMailContactSplat
                 }
             }
         }
