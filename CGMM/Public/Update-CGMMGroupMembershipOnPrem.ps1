@@ -4,7 +4,7 @@ Function Update-CGMMGroupMembershipOnPrem {
     Update on premise distribution group membership with the migrated group's new mail contact.
 
     .DESCRIPTION
-    Update on premise distribution group membership with the migrated group's new mail contact.  
+    Update on premise distribution group membership with the migrated group's new mail contact.
 
     .EXAMPLE
     Update-CGMMGroupMembershipOnPrem -Identity $Identity -Group $Groups
@@ -36,8 +36,8 @@ Function Update-CGMMGroupMembershipOnPrem {
         # should have the old group's identity, not the new group's which should be specified
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$Identity, 
-        
+        [string]$Identity,
+
         [Parameter(
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $True
@@ -45,33 +45,33 @@ Function Update-CGMMGroupMembershipOnPrem {
         [ValidateNotNullOrEmpty()]
         [Alias('MemberOfOnPrem')]
         [string[]]$Group,
-        
+
         # Optional parameters
         [Parameter()]
         [switch]$BypassSecurityGroupManagerCheck,
-        
+
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [string]$DomainController
     )
 
-	begin {}
-	process	{
+    begin {}
+    process	{
         # Check for Exchange cmdlet availability in On Prem & Exchange Online
         Try {Test-CGMMCmdletAccess -Environment OnPrem -ErrorAction Stop}
         Catch {
             $PsCmdlet.ThrowTerminatingError($PSItem)
         }
-		
-		ForEach ($Object in $Group) {
-            $AddDistributionGroupMember = @{
-                Identity    = $Object
-                Member      = $Identity
-            }
-            If ($PSBoundParameters.DomainController) {$AddDistributionGroupMember.Add('DomainController',$PSBoundParameters.DomainController)}
-            If ($PSBoundParameters.BypassSecurityGroupManagerCheck) {$AddDistributionGroupMember.Add('BypassSecurityGroupManagerCheck',$True)}
 
-            If ($PSCmdlet.ShouldProcess($Object,$MyInvocation.MyCommand)) {
+        ForEach ($Object in $Group) {
+            $AddDistributionGroupMember = @{
+                Identity = $Object
+                Member   = $Identity
+            }
+            If ($PSBoundParameters.DomainController) {$AddDistributionGroupMember.Add('DomainController', $PSBoundParameters.DomainController)}
+            If ($PSBoundParameters.BypassSecurityGroupManagerCheck) {$AddDistributionGroupMember.Add('BypassSecurityGroupManagerCheck', $True)}
+
+            If ($PSCmdlet.ShouldProcess($Object, $MyInvocation.MyCommand)) {
                 Try {
                     Add-PremCGMMDistributionGroupMember @AddDistributionGroupMember
                 }
@@ -81,8 +81,7 @@ Function Update-CGMMGroupMembershipOnPrem {
             }
         }
     }
-	end {}
+    end {}
 }
-	
-	
-		
+
+

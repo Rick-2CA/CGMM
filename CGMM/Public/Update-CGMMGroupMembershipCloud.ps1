@@ -4,7 +4,7 @@ Function Update-CGMMGroupMembershipCloud {
     Update other cloud distribution group membership with the migrated group's new cloud object.
 
     .DESCRIPTION
-    Update other cloud distribution group membership with the migrated group's new cloud object.  
+    Update other cloud distribution group membership with the migrated group's new cloud object.
 
     .EXAMPLE
     Update-CGMMGroupMemberShipCloud -Identity $Identity -Group $Groups
@@ -31,8 +31,8 @@ Function Update-CGMMGroupMembershipCloud {
         # should have the old group's identity, not the new group's which should be specified
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$Identity, 
-        
+        [string]$Identity,
+
         [Parameter(
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $True
@@ -40,28 +40,28 @@ Function Update-CGMMGroupMembershipCloud {
         [ValidateNotNullOrEmpty()]
         [Alias('MemberOfCloud')]
         [string[]]$Group,
-        
+
         # Optional parameters
         [Parameter()]
         [switch]$BypassSecurityGroupManagerCheck
     )
 
-	begin {}
-	process	{
+    begin {}
+    process	{
         # Check for Exchange cmdlet availability in On Prem & Exchange Online
         Try {Test-CGMMCmdletAccess -Environment Cloud -ErrorAction Stop}
         Catch {
             $PsCmdlet.ThrowTerminatingError($PSItem)
         }
-		
-		ForEach ($Object in $Group) {
-            $AddDistributionGroupMember = @{
-                Identity    = $Object
-                Member      = $Identity
-            }
-            If ($BypassSecurityGroupManagerCheck) {$AddDistributionGroupMember.Add('BypassSecurityGroupManagerCheck',$True)}
 
-            If ($PSCmdlet.ShouldProcess($Object,$MyInvocation.MyCommand)) {
+        ForEach ($Object in $Group) {
+            $AddDistributionGroupMember = @{
+                Identity = $Object
+                Member   = $Identity
+            }
+            If ($BypassSecurityGroupManagerCheck) {$AddDistributionGroupMember.Add('BypassSecurityGroupManagerCheck', $True)}
+
+            If ($PSCmdlet.ShouldProcess($Object, $MyInvocation.MyCommand)) {
                 $EAPSaved = $Global:ErrorActionPreference
                 $Global:ErrorActionPreference = 'Stop'
                 Try {
@@ -76,5 +76,5 @@ Function Update-CGMMGroupMembershipCloud {
             }
         }
     }
-	end {}
+    end {}
 }

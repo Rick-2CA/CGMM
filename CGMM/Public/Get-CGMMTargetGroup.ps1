@@ -41,7 +41,7 @@ Function Get-CGMMTargetGroup {
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$Identity,
-        
+
         [Parameter()]
         [string]$DomainController,
 
@@ -59,7 +59,7 @@ Function Get-CGMMTargetGroup {
         Catch {
             $PsCmdlet.ThrowTerminatingError($PSItem)
         }
-        
+
         $EAPSaved = $Global:ErrorActionPreference
         $Global:ErrorActionPreference = 'Stop'
         # Confirm entire forest is viewable
@@ -123,7 +123,7 @@ Function Get-CGMMTargetGroup {
             # ***Get-DistributionGroupMember is a private function*** The function doesn't require a prefix as with Exchange cmdlets
             $MemberOfCloud = Get-CGMMDistributionGroupMembership $GroupObject.PrimarySmtpAddress -Cloud -ErrorAction Stop
             $GroupObject | Add-Member -MemberType NoteProperty -Name MemberOfCloud -Value $MemberOfCloud
-            
+
             # MemberOf On Premise (Parent Groups of our target object)
             Write-Verbose "Querying MemberOf On Premise"
             # ***Get-DistributionGroupMember is a private function*** The function doesn't require a prefix as with Exchange cmdlets
@@ -158,9 +158,9 @@ Function Get-CGMMTargetGroup {
             $GroupObject | Add-Member -MemberType NoteProperty -Name LegacyExchangeDNCloud -Value $LegacyExchangeDNCloud
 
             # Remove parameters with null/empty values
-            # Get-DistributionList displays properties that or null or empty.  Set-DistributionList doesn't accept 
+            # Get-DistributionList displays properties that or null or empty.  Set-DistributionList doesn't accept
             # pipeline input and therefore isn't impacted by the null or empty values.  In the module we're doing a
-            # Get | Set that ends up sending the results of Get-DistributionList to Set-Distribution list so we 
+            # Get | Set that ends up sending the results of Get-DistributionList to Set-Distribution list so we
             # need to find and remove the null or empty values.
             $ExcludeProperties = ForEach ($PropertyName in $GroupObject.PSObject.Properties.Name) {
                 $Property = $GroupObject.$PropertyName

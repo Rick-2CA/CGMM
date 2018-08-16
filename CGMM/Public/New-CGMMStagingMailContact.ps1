@@ -59,7 +59,7 @@ Function New-CGMMStagingMailContact {
         Catch {
             $PsCmdlet.ThrowTerminatingError($PSItem)
         }
-				
+
 		# Apply prefix to mandatory fields
 		Write-Verbose "Applying prefix to mandatory fields"
 		$MandatoryParameters = @('Name','ExternalEmailAddress')

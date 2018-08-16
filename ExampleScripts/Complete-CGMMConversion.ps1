@@ -32,7 +32,7 @@ Function Complete-CGMMConversion {
 
         [Parameter()]
 		[Switch]$IgnoreNamingPolicy,
-        
+
         [Parameter()]
         [string]$DomainController
     )

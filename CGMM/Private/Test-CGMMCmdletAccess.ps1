@@ -41,7 +41,7 @@ Function Test-CGMMCmdletAccess {
                 Try {
                     Write-Verbose "Searching for command Get-$($CmdletPrefix)DistributionGroup"
                     $null = Get-Command "Get-$($CmdletPrefix)DistributionGroup" -ErrorAction Stop
-                    
+
                     Write-Verbose "Searching for command Get-$($CmdletPrefix)Recipient"
                     $null = Get-Command "Get-$($CmdletPrefix)Recipient" -ErrorAction Stop
                 }
@@ -66,4 +66,4 @@ Function Test-CGMMCmdletAccess {
         }
     }
 	end {}
-}        
+}

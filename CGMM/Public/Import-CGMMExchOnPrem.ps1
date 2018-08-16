@@ -18,6 +18,9 @@ Function Import-CGMMExchOnPrem {
 
     #>
 
+	[System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingPlainTextForPassword','')]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage('PSUsePSCredentialType','')]
+
 	[CmdletBinding()]
 	Param(
 		[parameter(Mandatory)]

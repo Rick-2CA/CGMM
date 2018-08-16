@@ -46,7 +46,7 @@ Function Convert-CGMMStagingGroupCloud {
         Try {
             # Check for Exchange cmdlet availability in On Prem & Exchange Online
             Test-CGMMCmdletAccess -Environment Cloud -ErrorAction Stop
-            
+
             $EAPSaved = $Global:ErrorActionPreference
             $Global:ErrorActionPreference = 'Stop'
 
@@ -62,14 +62,14 @@ Function Convert-CGMMStagingGroupCloud {
             }
             Write-Verbose "Querying for the intended group name $($OldGroupName), which shouldn't exist."
             If (Get-CloudCGMMDistributionGroup @GetDistributionGroupSettings) {
-                $ErrorText = "The distribution group {0} must be removed before the staging prefix may be removed from {1}." -f $GetDistributionGroupSettings.Identity,$PSBoundParameters.Identity 
+                $ErrorText = "The distribution group {0} must be removed before the staging prefix may be removed from {1}." -f $GetDistributionGroupSettings.Identity,$PSBoundParameters.Identity
                 Write-Error $ErrorText -ErrorAction Stop
             }
 
             # Find all properties that were prefixed.
             Write-Verbose "Identifing and processing prefixed properties"
-            $PropertiesToProcess = $Group.PSObject.Properties | 
-                Where-Object {$_.value -match $StagingGroupPrefix} | 
+            $PropertiesToProcess = $Group.PSObject.Properties |
+                Where-Object {$_.value -match $StagingGroupPrefix} |
                 Select-Object Name,Value
 
             # Setup a hash to be used to splat the non-prefixed values
@@ -92,7 +92,7 @@ Function Convert-CGMMStagingGroupCloud {
                     }
                     Default {Write-Warning "Property type not accounted for:  $($Property.Name).  Manual intervention required."}
                 }
-                
+
                 # Reconstruct the EmailAddresses property to hash the required adds and removes
                 # Any non-prefixed addresses that happen to have been assigned will remain unchanged
                 If ($Property.Name -eq 'EmailAddresses') {
