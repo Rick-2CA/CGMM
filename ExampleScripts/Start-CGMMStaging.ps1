@@ -30,9 +30,11 @@ Function Start-CGMMStaging {
     Start the CGMM staging process with mandatory values.  An external email address must be provided for the staging contact such as alias@tenant.mail.onmicrosoft.com.
     .NOTES
 
-	#>
+    #>
+
     #requires -Module CGMM
-    [cmdletbinding()]
+
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         # Mandatory parameters
         [Parameter(Mandatory = $true)]
@@ -82,108 +84,110 @@ Function Start-CGMMStaging {
 			This is where you'd customize to your environment with validation rules
 		#>
 
-        # Create staging group
-        Write-Verbose "Creating 'staging' cloud group"
-        $StagingGroup = $TargetGroup | New-CGMMStagingGroup -IgnoreNamingPolicy -ErrorAction Stop
+        If ($PSCmdlet.ShouldProcess($Name,$MyInvocation.MyCommand)) {
+            # Create staging group
+            Write-Verbose "Creating 'staging' cloud group"
+            $StagingGroup = $TargetGroup | New-CGMMStagingGroup -IgnoreNamingPolicy -ErrorAction Stop
 
-        # Set staging group once confirmed available
-        Write-Verbose "StagingGroup Identity:  $($StagingGroup.Identity)"
-        $i = 0
-        Do {
-            Write-Verbose "Waiting for the new cloud group to be available"
-            $i++
-            If ($i -gt 6) {Throw "Timed out waiting for $($StagingGroup.Identity) to be available for configuration. "}
-            Start-Sleep -Seconds 5
-            $StagingGroupReady = Get-CloudCGMMDistributionGroup $StagingGroup.Identity -ErrorAction SilentlyContinue
-        }
-        While ($null -eq $StagingGroupReady)
-        Write-Verbose "Configuring 'staging' cloud group"
-        $setCGMMStagingGroupSplat = @{
-            Identity                           = $StagingGroup.Identity
-            MemberDepartRestriction            = 'Closed'
-            RequireSenderAuthenticationEnabled = $False
-            ErrorAction                        = 'Stop'
-        }
-        $TargetGroup | Set-CGMMStagingGroup @setCGMMStagingGroupSplat
-
-        # Create staging contact
-        Write-Verbose "Creating on premise 'staged' mail contact"
-        $NewCGMMStagingMailContactSettings = @{
-            Name                 = $TargetGroup.Name
-            ExternalEmailAddress	= $ExternalEmailAddress
-            ErrorAction          = 'Stop'
-        }
-        If ($PSBoundParameters.Alias) {$NewCGMMStagingMailContactSettings.Add('Alias', $Alias)}
-        If ($PSBoundParameters.DomainController) {
-            $NewCGMMStagingMailContactSettings.Add('DomainController', $DomainController)
-        }
-        If ($PSBoundParameters.ContactOU) {
-            $NewCGMMStagingMailContactSettings.Add('OrganizationalUnit', $ContactOU)
-        }
-        $StagingContact = New-CGMMStagingMailContact @NewCGMMStagingMailContactSettings
-
-        # Configure staging contact when confirmed available
-        Write-Verbose "StagingContact Identity:  $($StagingContact.Identity)"
-        $i = 0
-        Do {
-            Write-Verbose "Waiting for the new on premise mail contact to be available"
-            $i++
-            If ($i -gt $WaitLoops) {Throw "Timed out waiting for $($StagingContact.Identity) to be available for configuration."}
-            Start-Sleep -Seconds 5
-            $getPremCGMMMailContactSplat = @{
-                Identity         = $StagingContact.Identity
-                DomainController = $DomainController
-                ErrorAction      = 'SilentlyContinue'
+            # Set staging group once confirmed available
+            Write-Verbose "StagingGroup Identity:  $($StagingGroup.Identity)"
+            $i = 0
+            Do {
+                Write-Verbose "Waiting for the new cloud group to be available"
+                $i++
+                If ($i -gt 6) {Throw "Timed out waiting for $($StagingGroup.Identity) to be available for configuration. "}
+                Start-Sleep -Seconds 5
+                $StagingGroupReady = Get-CloudCGMMDistributionGroup $StagingGroup.Identity -ErrorAction SilentlyContinue
             }
-            $StagingGroupReady = Get-PremCGMMMailContact @getPremCGMMMailContactSplat
-        }
-        While ($null -eq $StagingGroupReady)
-        Write-Verbose "Configuring 'staging' on premise mail contact"
-        $setCGMMStagingMailContactSplat = @{
-            Identity         = $StagingContact.Identity
-            DomainController = $DomainController
-            ErrorAction      = 'Stop'
-        }
-        $TargetGroup | Set-CGMMStagingMailContact @setCGMMStagingMailContactSplat
-
-        # To alter the contact primary SMTP to match the previous group config:
-        Write-Verbose "Disabling mail contact's email address policy & resetting primary address"
-        $setCGMMStagingMailContactSplat = @{
-            Identity                  = $StagingContact.Identity
-            PrimarySmtpAddress        = $StagingGroup.PrimarySmtpAddress
-            EmailAddressPolicyEnabled = $False
-            DomainController          = $DomainController
-            ErrorAction               = 'Stop'
-        }
-        Set-CGMMStagingMailContact @setCGMMStagingMailContactSplat
-        Write-Verbose "Enabling mail contact's email address policy"
-        $setCGMMStagingMailContactSplat = @{
-            Identity                  = $StagingContact.Identity
-            DomainController          = $DomainController
-            EmailAddressPolicyEnabled = $True
-            ErrorAction               = 'Stop'
-        }
-        Set-CGMMStagingMailContact @setCGMMStagingMailContactSplat
-
-        # Assign new objects to their respective group memberships (groups the new objects are nested into)
-        If ($TargetGroup.MemberOfCloud) {
-            Write-Verbose "Updating membership for $($StagingGroup.Identity)"
-            $updateCGMMGroupMembershipCloudSplat = @{
-                Group       = $TargetGroup.MemberOfCloud
-                Identity    = $StagingGroup.Identity
-                ErrorAction = 'Stop'
+            While ($null -eq $StagingGroupReady)
+            Write-Verbose "Configuring 'staging' cloud group"
+            $setCGMMStagingGroupSplat = @{
+                Identity                           = $StagingGroup.Identity
+                MemberDepartRestriction            = 'Closed'
+                RequireSenderAuthenticationEnabled = $False
+                ErrorAction                        = 'Stop'
             }
-            Update-CGMMGroupMembershipCloud @updateCGMMGroupMembershipCloudSplat
-        }
-        If ($TargetGroup.MemberOfOnPrem) {
-            Write-Verbose "Updating membership for $($StagingContact.Identity)"
-            $updateCGMMGroupMembershipOnPremSplat = @{
+            $TargetGroup | Set-CGMMStagingGroup @setCGMMStagingGroupSplat
+
+            # Create staging contact
+            Write-Verbose "Creating on premise 'staged' mail contact"
+            $NewCGMMStagingMailContactSettings = @{
+                Name                 = $TargetGroup.Name
+                ExternalEmailAddress	= $ExternalEmailAddress
+                ErrorAction          = 'Stop'
+            }
+            If ($PSBoundParameters.Alias) {$NewCGMMStagingMailContactSettings.Add('Alias', $Alias)}
+            If ($PSBoundParameters.DomainController) {
+                $NewCGMMStagingMailContactSettings.Add('DomainController', $DomainController)
+            }
+            If ($PSBoundParameters.ContactOU) {
+                $NewCGMMStagingMailContactSettings.Add('OrganizationalUnit', $ContactOU)
+            }
+            $StagingContact = New-CGMMStagingMailContact @NewCGMMStagingMailContactSettings
+
+            # Configure staging contact when confirmed available
+            Write-Verbose "StagingContact Identity:  $($StagingContact.Identity)"
+            $i = 0
+            Do {
+                Write-Verbose "Waiting for the new on premise mail contact to be available"
+                $i++
+                If ($i -gt $WaitLoops) {Throw "Timed out waiting for $($StagingContact.Identity) to be available for configuration."}
+                Start-Sleep -Seconds 5
+                $getPremCGMMMailContactSplat = @{
+                    Identity         = $StagingContact.Identity
+                    DomainController = $DomainController
+                    ErrorAction      = 'SilentlyContinue'
+                }
+                $StagingGroupReady = Get-PremCGMMMailContact @getPremCGMMMailContactSplat
+            }
+            While ($null -eq $StagingGroupReady)
+            Write-Verbose "Configuring 'staging' on premise mail contact"
+            $setCGMMStagingMailContactSplat = @{
                 Identity         = $StagingContact.Identity
-                Group            = $TargetGroup.MemberOfOnPrem
                 DomainController = $DomainController
                 ErrorAction      = 'Stop'
             }
-            Update-CGMMGroupMembershipOnPrem @updateCGMMGroupMembershipOnPremSplat
+            $TargetGroup | Set-CGMMStagingMailContact @setCGMMStagingMailContactSplat
+
+            # To alter the contact primary SMTP to match the previous group config:
+            Write-Verbose "Disabling mail contact's email address policy & resetting primary address"
+            $setCGMMStagingMailContactSplat = @{
+                Identity                  = $StagingContact.Identity
+                PrimarySmtpAddress        = $StagingGroup.PrimarySmtpAddress
+                EmailAddressPolicyEnabled = $False
+                DomainController          = $DomainController
+                ErrorAction               = 'Stop'
+            }
+            Set-CGMMStagingMailContact @setCGMMStagingMailContactSplat
+            Write-Verbose "Enabling mail contact's email address policy"
+            $setCGMMStagingMailContactSplat = @{
+                Identity                  = $StagingContact.Identity
+                DomainController          = $DomainController
+                EmailAddressPolicyEnabled = $True
+                ErrorAction               = 'Stop'
+            }
+            Set-CGMMStagingMailContact @setCGMMStagingMailContactSplat
+
+            # Assign new objects to their respective group memberships (groups the new objects are nested into)
+            If ($TargetGroup.MemberOfCloud) {
+                Write-Verbose "Updating membership for $($StagingGroup.Identity)"
+                $updateCGMMGroupMembershipCloudSplat = @{
+                    Group       = $TargetGroup.MemberOfCloud
+                    Identity    = $StagingGroup.Identity
+                    ErrorAction = 'Stop'
+                }
+                Update-CGMMGroupMembershipCloud @updateCGMMGroupMembershipCloudSplat
+            }
+            If ($TargetGroup.MemberOfOnPrem) {
+                Write-Verbose "Updating membership for $($StagingContact.Identity)"
+                $updateCGMMGroupMembershipOnPremSplat = @{
+                    Identity         = $StagingContact.Identity
+                    Group            = $TargetGroup.MemberOfOnPrem
+                    DomainController = $DomainController
+                    ErrorAction      = 'Stop'
+                }
+                Update-CGMMGroupMembershipOnPrem @updateCGMMGroupMembershipOnPremSplat
+            }
         }
     }
     Catch {
