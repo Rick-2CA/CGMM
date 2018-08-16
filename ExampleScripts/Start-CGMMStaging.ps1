@@ -6,6 +6,24 @@ Function Start-CGMMStaging {
 	.DESCRIPTION
 	An example of how to utilize the CGMM module to automate the staging of a group and its on premise contact.  It's recommended to specify a domain controller that's in the same site as Exchange.  The external email address is used on the new contact and should correspond with the routing address previously assigned to the group you're migrating.  The assumption is that the group is already synced to the cloud.  If that assumption is false you should manually add the routing address in your process.
 
+    .PARAMETER Identity
+    A string that will return the target group in a query
+
+    .PARAMETER ExternalEmailAddress
+    The contact's external email address.  Often formated as primaryemail@tenant.mail.onmicrosoft.com
+
+    .PARAMETER DomainController
+    Control with one domain controller all reads/writes will target.  Keeps replication from causing delays that will cause errors.
+
+    .PARAMETER Alias
+    The alias for the group
+
+    .PARAMETER ContactOU
+    The distinguished name for the OU the new contact should reside in
+
+    .PARAMETER WaitLoops
+    The number of loops to cycle through while waiting for the new contact to be available for configuration.  There is a five second sleep between loops.  Default value is 6 for approximately a 30 second wait.
+
     .EXAMPLE
     Start-CGMMStaging -Identity $Identity -ExternalEmailAddress $ExternalEmailAddress
 
@@ -36,7 +54,10 @@ Function Start-CGMMStaging {
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [string]$ContactOU
+        [string]$ContactOU,
+
+        [Parameter()]
+        [string]$WaitLoops = 6
     )
 
     $SavedErrorActionPreference = $Global:ErrorActionPreference
@@ -107,7 +128,7 @@ Function Start-CGMMStaging {
         Do {
             Write-Verbose "Waiting for the new on premise mail contact to be available"
             $i++
-            If ($i -gt 6) {Throw "Timed out waiting for $($StagingContact.Identity) to be available for configuration."}
+            If ($i -gt $WaitLoops) {Throw "Timed out waiting for $($StagingContact.Identity) to be available for configuration."}
             Start-Sleep -Seconds 5
             $getPremCGMMMailContactSplat = @{
                 Identity         = $StagingContact.Identity
