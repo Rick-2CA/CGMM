@@ -1,10 +1,10 @@
 Function Start-CGMMStaging {
     <#
     .SYNOPSIS
-	An example of how to utilize the CGMM module to automate the staging of a group to migrate.
+    An example of how to utilize the CGMM module to automate the staging of a group to migrate.
 
-	.DESCRIPTION
-	An example of how to utilize the CGMM module to automate the staging of a group and its on premise contact.  It's recommended to specify a domain controller that's in the same site as Exchange.  The external email address is used on the new contact and should correspond with the routing address previously assigned to the group you're migrating.  The assumption is that the group is already synced to the cloud.  If that assumption is false you should manually add the routing address in your process.
+    .DESCRIPTION
+    An example of how to utilize the CGMM module to automate the staging of a group and its on premise contact.  It's recommended to specify a domain controller that's in the same site as Exchange.  The external email address is used on the new contact and should correspond with the routing address previously assigned to the group you're migrating.  The assumption is that the group is already synced to the cloud.  If that assumption is false you should manually add the routing address in your process.
 
     .PARAMETER Identity
     A string that will return the target group in a query
@@ -27,7 +27,7 @@ Function Start-CGMMStaging {
     .EXAMPLE
     Start-CGMMStaging -Identity $Identity -ExternalEmailAddress $ExternalEmailAddress
 
-	Start the CGMM staging process with mandatory values.  An external email address must be provided for the staging contact such as alias@tenant.mail.onmicrosoft.com.
+    Start the CGMM staging process with mandatory values.  An external email address must be provided for the staging contact such as alias@tenant.mail.onmicrosoft.com.
     .NOTES
 
 	#>
